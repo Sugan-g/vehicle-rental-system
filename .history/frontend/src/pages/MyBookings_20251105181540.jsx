@@ -9,16 +9,6 @@ export default function BookingPage() {
     const [submitting, setSubmitting] = useState(null);
     const [successBooking, setSuccessBooking] = useState(null);
 
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
     const fetchData = async () => {
         const res = await API.get("/bookings/my");
         setBookings(res.data);
@@ -63,61 +53,6 @@ export default function BookingPage() {
         }));
     };
 
-    // ✅ Razorpay Payment Integration (fixed handler)
-    const handlePayment = async (booking) => {
-        const res = await loadRazorpayScript();
-        if (!res) {
-            alert("Failed to load Razorpay SDK. Please check your connection.");
-            return;
-        }
-
-        try {
-            const orderRes = await API.post("/payments/create-order", {
-                amount: booking.totalAmount || 1000,
-            });
-
-            const { amount, id: order_id, currency } = orderRes.data.order;
-
-            const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: amount.toString(),
-                currency: currency,
-                name: "Online Vehicle Rental",
-                description: `Payment for booking ${booking.vehicle.make} ${booking.vehicle.model}`,
-                order_id: order_id,
-
-                // ✅ FIXED PART BELOW
-                handler: async function (response) {
-                    const verifyRes = await API.post("/payments/verify", {
-                        razorpay_order_id: order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature, // <-- Added missing field
-                    });
-
-                    if (verifyRes.data.success) {
-                        alert("✅ Payment successful!");
-                        fetchData();
-                    } else {
-                        alert("❌ Payment verification failed.");
-                    }
-                },
-                // ✅ FIX ENDS
-
-                prefill: {
-                    name: booking.user?.name || "User",
-                    email: booking.user?.email || "user@example.com",
-                },
-                theme: { color: "#3399cc" },
-            };
-
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
-        } catch (err) {
-            console.error("Payment error:", err);
-            alert("Payment failed. Try again later.");
-        }
-    };
-
     const handleSubmitReview = async (b) => {
         if (!reviewInputs[b._id]?.rating) {
             alert("Please select a rating ⭐");
@@ -155,6 +90,46 @@ export default function BookingPage() {
         }
     };
 
+    // 💳 Razorpay Payment Integration
+    const handlePayment = async (b) => {
+        try {
+            const { data } = await API.post("/payments/create-order", {
+                amount: b.totalPrice || 500, // use your booking price if available
+            });
+            const { order } = data;
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: order.amount,
+                currency: "INR",
+                name: "Online Vehicle Rental System",
+                description: `Payment for ${b.vehicle.make} ${b.vehicle.model}`,
+                order_id: order.id,
+                handler: async function (response) {
+                    try {
+                        await API.post("/payments/verify", response);
+                        alert("✅ Payment successful!");
+                        fetchData(); // refresh bookings
+                    } catch (err) {
+                        console.error("Verification error", err);
+                        alert("❌ Payment verification failed");
+                    }
+                },
+                prefill: {
+                    name: "Suganya",
+                    email: "user@example.com",
+                },
+                theme: { color: "#2563eb" },
+            };
+
+            const razor = new window.Razorpay(options);
+            razor.open();
+        } catch (error) {
+            console.error("Payment error:", error);
+            alert("Something went wrong during payment.");
+        }
+    };
+
     return (
         <div className="px-4 pt-24 pb-6 max-w-2xl mx-auto md:pt-28">
             <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">
@@ -170,6 +145,7 @@ export default function BookingPage() {
                     key={b._id}
                     className="border p-4 rounded-xl mb-5 shadow-sm bg-white hover:shadow-md transition"
                 >
+                    {/* Vehicle Info */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
                             <p className="font-semibold text-lg text-gray-900">
@@ -197,6 +173,7 @@ export default function BookingPage() {
                         </div>
                     </div>
 
+                    {/* Buttons */}
                     {b.status !== "cancelled" && (
                         <div className="flex flex-wrap gap-3 mt-4">
                             <Link
@@ -213,23 +190,29 @@ export default function BookingPage() {
                             >
                                 Cancel
                             </button>
-
-                            {b.status !== "paid" && (
-                                <button
-                                    onClick={() => handlePayment(b)}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex-1 sm:flex-none hover:bg-green-700 transition"
-                                >
-                                    Pay Now
-                                </button>
-                            )}
                         </div>
                     )}
 
+                    {/* 💳 Razorpay Pay Now Button */}
+                    {b.status !== "cancelled" && (
+                        <div className="mt-3">
+                            <button
+                                onClick={() => handlePayment(b)}
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition w-full sm:w-auto"
+                            >
+                                💳 Pay Now
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Review Section */}
                     {b.status !== "cancelled" && (
                         <div className="mt-5 border-t pt-3">
                             {reviews[b.vehicle._id] ? (
                                 <div className="text-gray-800">
-                                    <p className="font-semibold text-lg mb-1">Your Review</p>
+                                    <p className="font-semibold text-lg mb-1">
+                                        Your Review
+                                    </p>
                                     <p className="text-yellow-500 text-xl">
                                         {"⭐".repeat(reviews[b.vehicle._id].rating)}
                                         {"☆".repeat(5 - reviews[b.vehicle._id].rating)}
@@ -246,11 +229,14 @@ export default function BookingPage() {
                                         Leave a Review
                                     </p>
 
+                                    {/* Stars */}
                                     <div className="flex gap-1 mb-2">
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <span
                                                 key={star}
-                                                onClick={() => handleStarClick(b._id, star)}
+                                                onClick={() =>
+                                                    handleStarClick(b._id, star)
+                                                }
                                                 className={`cursor-pointer text-2xl ${
                                                     reviewInputs[b._id]?.rating >= star
                                                         ? "text-yellow-500"
@@ -262,16 +248,21 @@ export default function BookingPage() {
                                         ))}
                                     </div>
 
+                                    {/* Comment box */}
                                     <textarea
                                         className="w-full border p-2 rounded-md text-sm resize-none focus:ring-2 focus:ring-blue-400"
                                         rows="2"
                                         placeholder="Share your experience..."
                                         value={reviewInputs[b._id]?.comment || ""}
                                         onChange={(e) =>
-                                            handleCommentChange(b._id, e.target.value)
+                                            handleCommentChange(
+                                                b._id,
+                                                e.target.value
+                                            )
                                         }
                                     ></textarea>
 
+                                    {/* Submit Button */}
                                     <button
                                         onClick={() => handleSubmitReview(b)}
                                         disabled={submitting === b._id}

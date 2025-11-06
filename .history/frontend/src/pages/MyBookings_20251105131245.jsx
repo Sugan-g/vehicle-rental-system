@@ -9,34 +9,23 @@ export default function BookingPage() {
     const [submitting, setSubmitting] = useState(null);
     const [successBooking, setSuccessBooking] = useState(null);
 
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.src = "https://checkout.razorpay.com/v1/checkout.js";
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
     const fetchData = async () => {
         const res = await API.get("/bookings/my");
         setBookings(res.data);
 
-        const vehicleIds = res.data.map((b) => b.vehicle._id);
+        // Fetch all reviews for user's bookings
+        const vehicleIds = res.data.map(b => b.vehicle._id);
         if (vehicleIds.length > 0) {
             const reviewRes = await API.get("/reviews/my");
             const mapped = {};
-            reviewRes.data.forEach((r) => {
+            reviewRes.data.forEach(r => {
                 mapped[r.vehicle._id] = { rating: r.rating, comment: r.comment };
             });
             setReviews(mapped);
         }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     const handleCancel = async (id) => {
         if (!window.confirm("Cancel this booking?")) return;
@@ -50,74 +39,20 @@ export default function BookingPage() {
     };
 
     const handleStarClick = (bookingId, rating) => {
-        setReviewInputs((prev) => ({
+        setReviewInputs(prev => ({
             ...prev,
-            [bookingId]: { ...prev[bookingId], rating },
+            [bookingId]: { ...prev[bookingId], rating }
         }));
     };
 
     const handleCommentChange = (bookingId, comment) => {
-        setReviewInputs((prev) => ({
+        setReviewInputs(prev => ({
             ...prev,
-            [bookingId]: { ...prev[bookingId], comment },
+            [bookingId]: { ...prev[bookingId], comment }
         }));
     };
 
-    // ✅ Razorpay Payment Integration (fixed handler)
-    const handlePayment = async (booking) => {
-        const res = await loadRazorpayScript();
-        if (!res) {
-            alert("Failed to load Razorpay SDK. Please check your connection.");
-            return;
-        }
-
-        try {
-            const orderRes = await API.post("/payments/create-order", {
-                amount: booking.totalAmount || 1000,
-            });
-
-            const { amount, id: order_id, currency } = orderRes.data.order;
-
-            const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: amount.toString(),
-                currency: currency,
-                name: "Online Vehicle Rental",
-                description: `Payment for booking ${booking.vehicle.make} ${booking.vehicle.model}`,
-                order_id: order_id,
-
-                // ✅ FIXED PART BELOW
-                handler: async function (response) {
-                    const verifyRes = await API.post("/payments/verify", {
-                        razorpay_order_id: order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature, // <-- Added missing field
-                    });
-
-                    if (verifyRes.data.success) {
-                        alert("✅ Payment successful!");
-                        fetchData();
-                    } else {
-                        alert("❌ Payment verification failed.");
-                    }
-                },
-                // ✅ FIX ENDS
-
-                prefill: {
-                    name: booking.user?.name || "User",
-                    email: booking.user?.email || "user@example.com",
-                },
-                theme: { color: "#3399cc" },
-            };
-
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
-        } catch (err) {
-            console.error("Payment error:", err);
-            alert("Payment failed. Try again later.");
-        }
-    };
-
+    // Updated to show review immediately after submission
     const handleSubmitReview = async (b) => {
         if (!reviewInputs[b._id]?.rating) {
             alert("Please select a rating ⭐");
@@ -132,17 +67,19 @@ export default function BookingPage() {
                 comment: reviewInputs[b._id].comment,
             });
 
-            setReviews((prev) => ({
+            //  Immediately update the review list in frontend
+            setReviews(prev => ({
                 ...prev,
                 [b.vehicle._id]: {
                     rating: res.data.rating,
-                    comment: res.data.comment,
-                },
+                    comment: res.data.comment
+                }
             }));
 
-            setReviewInputs((prev) => ({
+            //  Clear input for that booking after submit
+            setReviewInputs(prev => ({
                 ...prev,
-                [b._id]: { rating: 0, comment: "" },
+                [b._id]: { rating: 0, comment: "" }
             }));
 
             setSuccessBooking(b._id);
@@ -165,11 +102,12 @@ export default function BookingPage() {
                 <p className="text-center text-gray-600">No bookings found.</p>
             )}
 
-            {bookings.map((b) => (
+            {bookings.map(b => (
                 <div
                     key={b._id}
                     className="border p-4 rounded-xl mb-5 shadow-sm bg-white hover:shadow-md transition"
                 >
+                    {/* Vehicle Info */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
                             <p className="font-semibold text-lg text-gray-900">
@@ -197,6 +135,7 @@ export default function BookingPage() {
                         </div>
                     </div>
 
+                    {/* Buttons */}
                     {b.status !== "cancelled" && (
                         <div className="flex flex-wrap gap-3 mt-4">
                             <Link
@@ -213,18 +152,10 @@ export default function BookingPage() {
                             >
                                 Cancel
                             </button>
-
-                            {b.status !== "paid" && (
-                                <button
-                                    onClick={() => handlePayment(b)}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex-1 sm:flex-none hover:bg-green-700 transition"
-                                >
-                                    Pay Now
-                                </button>
-                            )}
                         </div>
                     )}
 
+                    {/* Review Section */}
                     {b.status !== "cancelled" && (
                         <div className="mt-5 border-t pt-3">
                             {reviews[b.vehicle._id] ? (
@@ -242,12 +173,11 @@ export default function BookingPage() {
                                 </div>
                             ) : (
                                 <div className="mt-2">
-                                    <p className="font-semibold text-gray-700 mb-1">
-                                        Leave a Review
-                                    </p>
+                                    <p className="font-semibold text-gray-700 mb-1">Leave a Review</p>
 
+                                    {/* Stars */}
                                     <div className="flex gap-1 mb-2">
-                                        {[1, 2, 3, 4, 5].map((star) => (
+                                        {[1, 2, 3, 4, 5].map(star => (
                                             <span
                                                 key={star}
                                                 onClick={() => handleStarClick(b._id, star)}
@@ -262,16 +192,16 @@ export default function BookingPage() {
                                         ))}
                                     </div>
 
+                                    {/* Comment box */}
                                     <textarea
                                         className="w-full border p-2 rounded-md text-sm resize-none focus:ring-2 focus:ring-blue-400"
                                         rows="2"
                                         placeholder="Share your experience..."
                                         value={reviewInputs[b._id]?.comment || ""}
-                                        onChange={(e) =>
-                                            handleCommentChange(b._id, e.target.value)
-                                        }
+                                        onChange={e => handleCommentChange(b._id, e.target.value)}
                                     ></textarea>
 
+                                    {/* Submit Button */}
                                     <button
                                         onClick={() => handleSubmitReview(b)}
                                         disabled={submitting === b._id}
@@ -281,11 +211,10 @@ export default function BookingPage() {
                                                 : "hover:bg-green-700"
                                         }`}
                                     >
-                                        {submitting === b._id
-                                            ? "Submitting..."
-                                            : "Submit Review"}
+                                        {submitting === b._id ? "Submitting..." : "Submit Review"}
                                     </button>
 
+                                    {/* Inline success message */}
                                     {successBooking === b._id && (
                                         <p className="text-green-600 text-sm mt-2 font-medium">
                                             ✅ Review submitted successfully!

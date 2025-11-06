@@ -17,25 +17,25 @@ connectDB();
 
 const app = express();
 
-// CORS must come before JSON/body parsers
+// ✅ 1️⃣ CORS must come before JSON/body parsers
 app.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-            "http://localhost:3000",
-            "https://euphonious-vacherin-dbadc7.netlify.app",
-        ],
-        credentials: true,
-        allowedHeaders: ["Content-Type", "Authorization"],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    })
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://euphonious-vacherin-dbadc7.netlify.app",
+    ],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
 );
 
-//  then body and cookie parsers
+// ✅ 2️⃣ then body and cookie parsers
 app.use(express.json());
 app.use(cookieParser());
 
-// static files and routes
+// ✅ 3️⃣ static files and routes
 app.use("/images", express.static(path.join(process.cwd(), "images")));
 
 app.use("/api/auth", authRoutes);
@@ -44,7 +44,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// error handlers
+// ✅ 4️⃣ error handlers
 app.use(notFound);
 app.use(errorHandler);
 

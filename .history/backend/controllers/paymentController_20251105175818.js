@@ -1,7 +1,7 @@
 // controllers/paymentController.js
 import crypto from "crypto";
 import { razorpayInstance } from "../config/razorpay.js";
-import Payment from "../models/Payment.js";
+import Payment from "../models/paymentModel.js";
 
 /**
  * @desc Create Razorpay Order

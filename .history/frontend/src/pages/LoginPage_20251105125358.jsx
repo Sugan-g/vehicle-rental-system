@@ -14,7 +14,7 @@ export default function LoginPage() {
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("role", res.data.user.role);
 
-    //  Trigger custom event so Navbar updates immediately
+    // ✅ Trigger custom event so Navbar updates immediately
     window.dispatchEvent(new Event("storage"));
 
     navigate("/"); // Redirect to home

@@ -3,47 +3,77 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/api";
 
 export default function BookingPage() {
-    const { vehicleId } = useParams();
-    const navigate = useNavigate();
+  const { vehicleId } = useParams();
+  const navigate = useNavigate();
 
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleBook = async () => {
-        if (!startDate || !endDate) return alert("Select dates");
+  const handleBook = async () => {
+    if (!startDate || !endDate) return alert("Please select both dates.");
 
-        try {
-            setLoading(true);
-            await API.post("/bookings", { vehicleId, startDate, endDate });
-            alert("Booked Successfully ✅");
-            navigate("/my-bookings");
-        } catch (err) {
-            alert("Booking failed");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      setLoading(true);
+      await API.post("/bookings", { vehicleId, startDate, endDate });
+      alert("✅ Booked Successfully!");
+      navigate("/my-bookings");
+    } catch (err) {
+      alert(err.response?.data?.message || "Booking failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="px-4 pt-24 pb-6 max-w-md mx-auto md:pt-28">
-            <h1 className="text-xl font-bold mb-4 text-center">Book Vehicle</h1>
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 px-4">
+      <div className="bg-white/80 backdrop-blur-md w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-3xl">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
+          🚗 Book Your Vehicle
+        </h1>
 
-            <label className="block mb-1 font-medium">Start Date</label>
-            <input type="date" className="border p-2 w-full mb-3"
-                value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+        <div className="space-y-5">
+          <div>
+            <label className="block mb-1 text-gray-700 font-semibold">
+              Start Date
+            </label>
+            <input
+              type="date"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
 
-            <label className="block mb-1 font-medium">End Date</label>
-            <input type="date" className="border p-2 w-full mb-4"
-                value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <div>
+            <label className="block mb-1 text-gray-700 font-semibold">
+              End Date
+            </label>
+            <input
+              type="date"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
 
-            <button
-                onClick={handleBook}
-                disabled={loading}
-                className="bg-green-600 text-white w-full py-2 rounded-md"
-            >
-                {loading ? "Booking..." : "Confirm Booking"}
-            </button>
+          <button
+            onClick={handleBook}
+            disabled={loading}
+            className={`w-full py-3 text-white font-semibold rounded-lg shadow-md text-lg transition-all duration-300 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 hover:shadow-lg"
+            }`}
+          >
+            {loading ? "Booking..." : "Confirm Booking"}
+          </button>
+
+          <p className="text-center text-gray-600 text-sm mt-3">
+            Please verify your selected dates before confirming.
+          </p>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

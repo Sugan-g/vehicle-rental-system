@@ -9,6 +9,7 @@ export default function BookingPage() {
     const [submitting, setSubmitting] = useState(null);
     const [successBooking, setSuccessBooking] = useState(null);
 
+    // ✅ Load Razorpay script dynamically
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
             const script = document.createElement("script");
@@ -23,6 +24,7 @@ export default function BookingPage() {
         const res = await API.get("/bookings/my");
         setBookings(res.data);
 
+        // Fetch all reviews for user's bookings
         const vehicleIds = res.data.map((b) => b.vehicle._id);
         if (vehicleIds.length > 0) {
             const reviewRes = await API.get("/reviews/my");
@@ -63,7 +65,7 @@ export default function BookingPage() {
         }));
     };
 
-    // ✅ Razorpay Payment Integration (fixed handler)
+    // ✅ Razorpay Payment Integration
     const handlePayment = async (booking) => {
         const res = await loadRazorpayScript();
         if (!res) {
@@ -72,12 +74,14 @@ export default function BookingPage() {
         }
 
         try {
+            // 1️⃣ Create Razorpay order from backend
             const orderRes = await API.post("/payments/create-order", {
-                amount: booking.totalAmount || 1000,
+                amount: booking.totalAmount || 1000, // example default
             });
 
             const { amount, id: order_id, currency } = orderRes.data.order;
 
+            // 2️⃣ Razorpay options
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: amount.toString(),
@@ -85,13 +89,11 @@ export default function BookingPage() {
                 name: "Online Vehicle Rental",
                 description: `Payment for booking ${booking.vehicle.make} ${booking.vehicle.model}`,
                 order_id: order_id,
-
-                // ✅ FIXED PART BELOW
                 handler: async function (response) {
+                    // 3️⃣ Verify payment after success
                     const verifyRes = await API.post("/payments/verify", {
-                        razorpay_order_id: order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature, // <-- Added missing field
+                        orderId: order_id,
+                        paymentId: response.razorpay_payment_id,
                     });
 
                     if (verifyRes.data.success) {
@@ -101,8 +103,6 @@ export default function BookingPage() {
                         alert("❌ Payment verification failed.");
                     }
                 },
-                // ✅ FIX ENDS
-
                 prefill: {
                     name: booking.user?.name || "User",
                     email: booking.user?.email || "user@example.com",
@@ -118,6 +118,7 @@ export default function BookingPage() {
         }
     };
 
+    // ✅ Review Submit Logic (unchanged)
     const handleSubmitReview = async (b) => {
         if (!reviewInputs[b._id]?.rating) {
             alert("Please select a rating ⭐");
@@ -170,6 +171,7 @@ export default function BookingPage() {
                     key={b._id}
                     className="border p-4 rounded-xl mb-5 shadow-sm bg-white hover:shadow-md transition"
                 >
+                    {/* Vehicle Info */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
                             <p className="font-semibold text-lg text-gray-900">
@@ -197,6 +199,7 @@ export default function BookingPage() {
                         </div>
                     </div>
 
+                    {/* Buttons */}
                     {b.status !== "cancelled" && (
                         <div className="flex flex-wrap gap-3 mt-4">
                             <Link
@@ -214,6 +217,7 @@ export default function BookingPage() {
                                 Cancel
                             </button>
 
+                            {/* ✅ New Payment Button */}
                             {b.status !== "paid" && (
                                 <button
                                     onClick={() => handlePayment(b)}
@@ -225,6 +229,7 @@ export default function BookingPage() {
                         </div>
                     )}
 
+                    {/* Review Section */}
                     {b.status !== "cancelled" && (
                         <div className="mt-5 border-t pt-3">
                             {reviews[b.vehicle._id] ? (

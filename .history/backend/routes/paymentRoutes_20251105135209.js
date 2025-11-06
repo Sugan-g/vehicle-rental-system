@@ -1,13 +1,13 @@
 import express from "express";
 import { createOrder, verifyPayment } from "../controllers/paymentController.js";
-import { protect } from "../middlewares/authMiddleware.js"; // to restrict unauthorized users
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 // Create Razorpay order
-router.post("/create-order", protect, createOrder);
+router.post("/order", protect, createOrder);
 
-// Verify payment
+// Verify Razorpay payment
 router.post("/verify", protect, verifyPayment);
 
 export default router;
