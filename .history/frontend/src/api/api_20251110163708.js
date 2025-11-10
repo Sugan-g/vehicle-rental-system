@@ -9,7 +9,7 @@ const API = axios.create({
     headers: { "Content-Type": "application/json" },
 });
 
-//  Attach token if exists
+// 🔐 Attach token if exists
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem("token");
     if (token) {
