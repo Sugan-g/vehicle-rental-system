@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
-import { useAuth } from "../context/AuthContext"; // Import context
+import { useAuth } from "../context/AuthContext"; // ✅ Import context
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const { isLoggedIn, role, logout } = useAuth(); //  Use context
+  const { isLoggedIn, role, logout } = useAuth(); // ✅ Use context
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {

@@ -16,7 +16,7 @@ export default function LoginPage() {
       const res = await API.post("/auth/login", { email, password });
 
       if (res.data && res.data.token && res.data.user) {
-        // Instead of manually setting localStorage, use context
+        // ✅ Instead of manually setting localStorage, use context
         login(res.data.token, res.data.user.role);
 
         // Navigate based on role (admin/home)
