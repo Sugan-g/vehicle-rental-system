@@ -9,7 +9,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [role, setRole] = useState(null);
 
-  // Function to check auth from localStorage
+  // ✅ Function to check auth from localStorage
   const checkAuth = () => {
     const token = localStorage.getItem("token");
     const userRole = localStorage.getItem("role");
@@ -17,7 +17,7 @@ export default function Navbar() {
     setRole(userRole);
   };
 
-  // Recheck whenever route or storage changes
+  // ✅ Recheck whenever route or storage changes
   useEffect(() => {
     checkAuth();
     const handleStorageChange = () => checkAuth();
@@ -26,9 +26,9 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [location.pathname]); //  re-run when route changes
+  }, [location.pathname]); // ✅ re-run when route changes
 
-  //  Logout
+  // ✅ Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
