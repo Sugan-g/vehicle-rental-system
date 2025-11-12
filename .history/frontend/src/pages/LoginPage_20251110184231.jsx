@@ -13,7 +13,7 @@ export default function LoginPage() {
     try {
       const res = await API.post("/auth/login", { email, password });
 
-      // Check for success before storing anything
+      // ✅ Check for success before storing anything
       if (res.data && res.data.token && res.data.user) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", res.data.user.role);

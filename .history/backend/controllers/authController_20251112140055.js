@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-
+authUser 
 // Helper to generate JWT token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -52,19 +52,20 @@ export const registerUser = async (req, res) => {
 export const authUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(" Login Request Received:", req.body); // <-- add this
 
         const user = await User.findOne({ email });
-        console.log("User Found:", user); // <-- add this
-
         if (!user) {
-            return res.status(401).json({ success: false, message: "Invalid email or password" });
+            return res
+                .status(401)
+                .json({ success: false, message: "Invalid email or password" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
-
+        // Compare with 'user.password'
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: "Invalid email or password" });
+            return res
+                .status(401)
+                .json({ success: false, message: "Invalid email or password" });
         }
 
         res.status(200).json({
@@ -80,7 +81,8 @@ export const authUser = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in authUser:", error);
-        res.status(500).json({ success: false, message: "Server error during login" });
+        res
+            .status(500)
+            .json({ success: false, message: "Server error during login" });
     }
 };
-

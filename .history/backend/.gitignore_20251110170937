@@ -1,6 +1,5 @@
 # dependencies
 node_modules/
-.history
 
 # environment variables
 .env
@@ -26,4 +25,4 @@ build/
 *.njsproj
 *.sln
 *.sw?
-
+.history

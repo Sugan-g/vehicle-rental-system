@@ -21,7 +21,7 @@ export const protect = async (req, res, next) => {
             res.status(401).json({ message: "Not authorized, token failed" });
         }
     } else {
-        console.log(" No token in header");
+        console.log(" No token in header"); 
         res.status(401).json({ message: "No token provided" });
     }
 };
