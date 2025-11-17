@@ -49,7 +49,7 @@ export default function HomePage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 mt-15">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 ">
 
             {/* Title + Search beside each other */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between pt-4 mb-6">

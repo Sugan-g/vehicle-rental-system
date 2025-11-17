@@ -13,30 +13,21 @@ export default function HomePage() {
             try {
                 const res = await API.get("/vehicles");
                 setVehicles(res.data);
-                setFilteredVehicles(res.data);
+                setFilteredVehicles(res.data); // default
             } catch (error) {
                 console.error("Error fetching vehicles:", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchVehicles();
     }, []);
 
-    // ✅ Correct search filter (make + model + type + location)
+    // Filter when typing in search box
     useEffect(() => {
-        const search = searchTerm.toLowerCase();
-
-        const result = vehicles.filter((v) => {
-            return (
-                (v?.make || "").toLowerCase().includes(search) ||
-                (v?.model || "").toLowerCase().includes(search) ||
-                (v?.type || "").toLowerCase().includes(search) ||
-                (v?.location || "").toLowerCase().includes(search)
-            );
-        });
-
+        const result = vehicles.filter(v =>
+            v.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
         setFilteredVehicles(result);
     }, [searchTerm, vehicles]);
 
@@ -49,22 +40,24 @@ export default function HomePage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 mt-15">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            {/* Title + Search beside each other */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between pt-4 mb-6">
-                <h1 className="text-2xl font-bold mb-4 md:mb-0">Available Vehicles</h1>
-
+            {/* --- Search Box --- */}
+            <div className="flex justify-center md:justify-start mb-6">
                 <input
                     type="text"
-                    placeholder="Search (make, model, type, location)..."
+                    placeholder="Search vehicle by name..."
                     className="w-full md:w-64 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            {/* No results */}
+            <h1 className="text-2xl font-bold mb-6 text-center md:text-left">
+                Available Vehicles
+            </h1>
+
+            {/* If no filtered results */}
             {!filteredVehicles.length ? (
                 <p className="text-center text-gray-500">No matching vehicles found</p>
             ) : (
@@ -77,7 +70,7 @@ export default function HomePage() {
                         xl:grid-cols-4
                     "
                 >
-                    {filteredVehicles.map((vehicle) => (
+                    {filteredVehicles.map(vehicle => (
                         <VehicleCard key={vehicle._id} vehicle={vehicle} />
                     ))}
                 </div>
