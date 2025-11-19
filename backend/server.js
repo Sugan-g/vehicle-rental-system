@@ -30,8 +30,8 @@ app.use(
         credentials: true,
     })
 );
+app.options(/.*/, cors());
 
-//  then body and cookie parsers
 app.use(express.json());
 app.use(cookieParser());
 app.get("/api/test", (req, res) => {
