@@ -5,7 +5,6 @@ const API = axios.create({
         import.meta.env.MODE === "development"
             ? "http://localhost:5000/api" // local backend for dev
             : "https://vehicle-rental-system-pitf.onrender.com/api", // deployed backend (Render)
-    withCredentials: true,
     headers: { "Content-Type": "application/json" },
 });
 

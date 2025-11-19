@@ -25,12 +25,10 @@ app.use(
             "http://localhost:3000",
             "https://euphonious-vacherin-dbadc7.netlify.app",
         ],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
-app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(cookieParser());
