@@ -11,6 +11,7 @@ export const createCheckoutSession = async (req, res) => {
         if (!bookingId || !amount) {
             return res.status(400).json({ message: "Missing bookingId or amount" });
         }
+        const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -25,8 +26,8 @@ export const createCheckoutSession = async (req, res) => {
                 },
             ],
             mode: "payment",
-            success_url: `http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `http://localhost:5173/payment-cancel`,
+            success_url: `${CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${CLIENT_URL}/payment-cancel`,
         });
 
         // Store initial pending payment
