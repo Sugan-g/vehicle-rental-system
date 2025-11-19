@@ -25,13 +25,13 @@ export default function AdminDashboard() {
             try {
                 const [vehicleRes, bookingRes] = await Promise.all([
                     API.get("/vehicles"),
-                    API.get("/bookings?page=1&limit=200") // fetch all bookings for now
+                    API.get("/bookings?page=1&limit=200") // fetch all bookings
                 ]);
 
                 setVehicles(vehicleRes.data);
 
-                // FIX → bookings should be bookingRes.data.data
-                setBookings(bookingRes.data.data);
+                // FIX: Avoid undefined crash
+                setBookings(bookingRes.data?.data || []);
 
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
@@ -51,28 +51,27 @@ export default function AdminDashboard() {
         );
     }
 
-    // Pagination logic
-    const paginatedBookings = bookings.slice(
+    // Pagination logic (FIX: Safe slicing)
+    const paginatedBookings = (bookings || []).slice(
         (bookingPage - 1) * ITEMS_PER_PAGE,
         bookingPage * ITEMS_PER_PAGE
     );
-    const totalBookingPages = Math.ceil(bookings.length / ITEMS_PER_PAGE);
+    const totalBookingPages = Math.ceil((bookings?.length || 0) / ITEMS_PER_PAGE);
 
-    const paginatedVehicles = vehicles.slice(
+    const paginatedVehicles = (vehicles || []).slice(
         (vehiclePage - 1) * ITEMS_PER_PAGE,
         vehiclePage * ITEMS_PER_PAGE
     );
-    const totalVehiclePages = Math.ceil(vehicles.length / ITEMS_PER_PAGE);
+    const totalVehiclePages = Math.ceil((vehicles?.length || 0) / ITEMS_PER_PAGE);
 
     // Stats
-    const totalRevenue = bookings.reduce((sum, b) => {
-    const start = new Date(b.startDate);
-    const end = new Date(b.endDate);
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-    const amount = b.amount ?? (b.vehicle?.pricePerDay || 0) * days;
-    return sum + amount;
-}, 0);
+    const totalRevenue = (bookings || []).reduce((sum, b) => {
+        const start = new Date(b.startDate);
+        const end = new Date(b.endDate);
+        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        const amount = b.amount ?? (b.vehicle?.pricePerDay || 0) * days;
+        return sum + amount;
+    }, 0);
 
     const totalVehicles = vehicles.length;
     const totalBookings = bookings.length;
