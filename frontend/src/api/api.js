@@ -1,14 +1,10 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL:
-        import.meta.env.MODE === "development"
-            ? "http://localhost:5000/api" // local backend for dev
-            : "https://vehicle-rental-system-pitf.onrender.com/api", // deployed backend (Render)
-    headers: { "Content-Type": "application/json" },
+    baseURL: import.meta.env.VITE_API_URL,
 });
 
-//  Attach token if exists
+// Attach token only when present
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem("token");
     if (token) {
