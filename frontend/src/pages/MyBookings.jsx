@@ -8,6 +8,9 @@ export default function BookingPage() {
   const [reviews, setReviews] = useState({});
   const [submitting, setSubmitting] = useState(null);
 
+  // FIX: Added loading state so “No bookings found” doesn't flash
+  const [loading, setLoading] = useState(true);
+
   // Pagination
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -16,6 +19,8 @@ export default function BookingPage() {
   // Fetch bookings + reviews
   const fetchData = async () => {
     try {
+      setLoading(true);
+
       const res = await API.get(`/bookings/my?page=${page}&limit=${limit}`);
       const items = res?.data?.data || [];
       const totalCount = res?.data?.total || 0;
@@ -23,7 +28,7 @@ export default function BookingPage() {
       setBookings(items);
       setTotal(totalCount);
 
-      // Fetch user reviews
+      // Fetch reviews
       const reviewRes = await API.get("/reviews/my");
       const map = {};
 
@@ -40,6 +45,8 @@ export default function BookingPage() {
     } catch (err) {
       setBookings([]);
       setTotal(0);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -160,136 +167,149 @@ export default function BookingPage() {
         My Bookings
       </h1>
 
+      {/* FIX: Loading state */}
+      {loading && (
+        <p className="text-center text-gray-500">Loading your bookings...</p>
+      )}
+
       {/* Empty */}
-      {bookings.length === 0 && (
+      {!loading && bookings.length === 0 && (
         <p className="text-center text-gray-600">No bookings found.</p>
       )}
 
       {/* BOOKING LIST */}
-      {bookings.map((b) => {
-        const vehicleId = b.vehicle?._id;
-        const existingReview = reviews[vehicleId];
-        const isPaid = b?.payment?.status === "paid";
+      {!loading &&
+        bookings.map((b) => {
+          const vehicleId = b.vehicle?._id;
+          const existingReview = reviews[vehicleId];
+          const isPaid = b?.payment?.status === "paid";
 
-        return (
-          <div key={b._id} className="border p-4 rounded-xl mb-5 shadow bg-white">
-            <div className="flex justify-between">
-              <div>
-                <p className="font-semibold text-lg">
-                  {b.vehicle?.make} {b.vehicle?.model}
-                </p>
-                <p className="text-sm text-gray-600">
-                  📍 {b.vehicle?.location}
+          return (
+            <div
+              key={b._id}
+              className="border p-4 rounded-xl mb-5 shadow bg-white"
+            >
+              <div className="flex justify-between">
+                <div>
+                  <p className="font-semibold text-lg">
+                    {b.vehicle?.make} {b.vehicle?.model}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    📍 {b.vehicle?.location}
+                  </p>
+                </div>
+
+                <p
+                  className={`font-semibold ${
+                    b.status === "cancelled"
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }`}
+                >
+                  {b.status}
                 </p>
               </div>
 
-              <p
-                className={`font-semibold ${
-                  b.status === "cancelled" ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {b.status}
-              </p>
-            </div>
+              {/* ACTION BUTTONS */}
+              {b.status !== "cancelled" && (
+                <div className="flex gap-3 mt-4">
 
-            {/* ACTION BUTTONS */}
-            {b.status !== "cancelled" && (
-              <div className="flex gap-3 mt-4">
-
-                {/* Edit */}
-                <Link
-                  to={`/edit-booking/${b._id}`}
-                  state={{ booking: b }}
-                  className={`px-4 py-2 rounded-lg text-white ${
-                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
-                  }`}
-                  onClick={(e) => isPaid && e.preventDefault()}
-                >
-                  Edit
-                </Link>
-
-                {/* Cancel */}
-                <button
-                  onClick={() => !isPaid && handleCancel(b._id)}
-                  disabled={isPaid}
-                  className={`px-4 py-2 rounded-lg text-white ${
-                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"
-                  }`}
-                >
-                  Cancel
-                </button>
-
-                {/* SHOW PAY BUTTONS ONLY IF PAYMENT NOT DONE */}
-                {!isPaid && (
-                  <button
-                    onClick={() => handlePayNow(b)}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                  {/* Edit */}
+                  <Link
+                    to={`/edit-booking/${b._id}`}
+                    state={{ booking: b }}
+                    className={`px-4 py-2 rounded-lg text-white ${
+                      isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                    }`}
+                    onClick={(e) => isPaid && e.preventDefault()}
                   >
-                    Pay Now
+                    Edit
+                  </Link>
+
+                  {/* Cancel */}
+                  <button
+                    onClick={() => !isPaid && handleCancel(b._id)}
+                    disabled={isPaid}
+                    className={`px-4 py-2 rounded-lg text-white ${
+                      isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"
+                    }`}
+                  >
+                    Cancel
                   </button>
-                )}
-              </div>
-            )}
 
-            {/* REVIEW SECTION — only show when completed */}
-            {b.status === "completed" && (
-              <div className="mt-4 border-t pt-3">
-                {existingReview ? (
-                  <div>
-                    <p className="font-semibold">Your Review</p>
-                    <p className="text-yellow-500 text-xl">
-                      {"★".repeat(existingReview.rating)}
-                    </p>
-                    <p className="text-gray-700">{existingReview.comment}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="font-semibold mb-1">Leave a Review</p>
-
-                    {/* Stars */}
-                    <div className="flex gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span
-                          key={star}
-                          onClick={() => handleStarClick(vehicleId, star)}
-                          className={`cursor-pointer text-2xl ${
-                            reviewInputs[vehicleId]?.rating >= star
-                              ? "text-yellow-500"
-                              : "text-gray-400"
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-
-                    <textarea
-                      rows="2"
-                      className="border w-full p-2 rounded"
-                      placeholder="Write your review"
-                      value={reviewInputs[vehicleId]?.comment || ""}
-                      onChange={(e) =>
-                        handleCommentChange(vehicleId, e.target.value)
-                      }
-                    ></textarea>
-
+                  {/* Pay */}
+                  {!isPaid && (
                     <button
-                      onClick={() => handleSubmitReview(b)}
-                      disabled={submitting === vehicleId}
-                      className="bg-green-600 text-white mt-2 px-4 py-2 rounded"
+                      onClick={() => handlePayNow(b)}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg"
                     >
-                      {submitting === vehicleId ? "Submitting..." : "Submit Review"}
+                      Pay Now
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
+                  )}
+                </div>
+              )}
+
+              {/* REVIEW SECTION */}
+              {b.status === "completed" && (
+                <div className="mt-4 border-t pt-3">
+                  {existingReview ? (
+                    <div>
+                      <p className="font-semibold">Your Review</p>
+                      <p className="text-yellow-500 text-xl">
+                        {"★".repeat(existingReview.rating)}
+                      </p>
+                      <p className="text-gray-700">{existingReview.comment}</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-semibold mb-1">Leave a Review</p>
+
+                      {/* Stars */}
+                      <div className="flex gap-1 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            onClick={() => handleStarClick(vehicleId, star)}
+                            className={`cursor-pointer text-2xl ${
+                              reviewInputs[vehicleId]?.rating >= star
+                                ? "text-yellow-500"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+
+                      <textarea
+                        rows="2"
+                        className="border w-full p-2 rounded"
+                        placeholder="Write your review"
+                        value={reviewInputs[vehicleId]?.comment || ""}
+                        onChange={(e) =>
+                          handleCommentChange(vehicleId, e.target.value)
+                        }
+                      ></textarea>
+
+                      <button
+                        onClick={() => handleSubmitReview(b)}
+                        disabled={submitting === vehicleId}
+                        className="bg-green-600 text-white mt-2 px-4 py-2 rounded"
+                      >
+                        {submitting === vehicleId
+                          ? "Submitting..."
+                          : "Submit Review"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
       {/* Pagination */}
-      {total > limit && (
+      {!loading && total > limit && (
         <div className="flex justify-center gap-3 mt-6">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
