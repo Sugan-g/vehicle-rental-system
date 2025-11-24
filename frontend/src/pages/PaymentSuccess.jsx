@@ -21,7 +21,7 @@ export default function PaymentSuccess() {
         async function verifyPayment() {
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/api/payments/verify?session_id=${sessionId}`
+                    `https://vehicle-rental-system-pitf.onrender.com/api/payments/verify?session_id=${sessionId}`
                 );
 
                 setStatus(response.data.paymentStatus);
