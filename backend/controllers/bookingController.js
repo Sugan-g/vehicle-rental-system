@@ -1,6 +1,7 @@
 import Booking from "../models/Booking.js";
 import Vehicle from "../models/Vehicle.js";
 import sendEmail from "../utils/sendEmail.js";
+import Payment from "../models/Payment.js";
 
 // Email template
 const emailTemplate = (title, message, booking, vehicle) => `
@@ -77,7 +78,7 @@ export const createBooking = async (req, res) => {
     }
 };
 
-// =============== Get My Bookings ====================
+// =============== Get My Bookings (with Payment Join) ====================
 export const getMyBookings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -90,14 +91,27 @@ export const getMyBookings = async (req, res) => {
             .populate("vehicle", "make model pricePerDay images location")
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean(); // important!
 
-        res.json({ data: bookings, total, page, limit });
+        // JOIN PAYMENT DATA FOR EACH BOOKING
+        const enriched = await Promise.all(
+            bookings.map(async (b) => {
+                const payment = await Payment.findOne({ bookingId: b._id }).lean();
+                return { ...b, payment }; // append payment to booking
+            })
+        );
+
+        res.json({ data: enriched, total, page, limit });
 
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch user bookings", error: error.message });
+        res.status(500).json({
+            message: "Failed to fetch user bookings",
+            error: error.message
+        });
     }
 };
+
 
 // =============== Get Booking By ID ====================
 export const getBookingById = async (req, res) => {

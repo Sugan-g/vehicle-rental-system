@@ -213,18 +213,15 @@ export default function BookingPage() {
                 </button>
 
                 {/* SHOW PAY BUTTONS ONLY IF PAYMENT NOT DONE */}
-                {b.paymentStatus !== "paid" && (
-                  <>
-                    <button
-                      onClick={() => handlePayNow(b)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                    >
-                      Pay Now
-                    </button>
-
-                    
-                  </>
+                {b?.payment?.status !== "paid" && (
+                  <button
+                    onClick={() => handlePayNow(b)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Pay Now
+                  </button>
                 )}
+
               </div>
             )}
 
