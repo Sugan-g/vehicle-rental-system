@@ -7,13 +7,17 @@ export default function BookingPage() {
   const [reviewInputs, setReviewInputs] = useState({});
   const [reviews, setReviews] = useState({});
   const [submitting, setSubmitting] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
   // Pagination
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
+
+  const formatDate = (date) => {
+    if (!date) return "—";
+    return new Date(date).toLocaleDateString();
+  };
 
   const fetchData = async () => {
     try {
@@ -176,9 +180,7 @@ export default function BookingPage() {
                   <p className="font-semibold text-lg">
                     {b.vehicle?.make} {b.vehicle?.model}
                   </p>
-                  <p className="text-sm text-gray-600">
-                    📍 {b.vehicle?.location}
-                  </p>
+                  <p className="text-sm text-gray-600">📍 {b.vehicle?.location}</p>
                 </div>
 
                 <p
@@ -192,18 +194,16 @@ export default function BookingPage() {
                 </p>
               </div>
 
-              {/* ✅ ADDED START DATE, END DATE, PAYMENT STATUS */}
+              {/* Start & End Date */}
               <div className="mt-3 text-sm text-gray-700 border-t pt-3 space-y-1">
                 <p>
                   <span className="font-semibold">Start Date:</span>{" "}
-                  {b.startDate
-                    ? new Date(b.startDate).toLocaleString()
-                    : "—"}
+                  {formatDate(b.startDate)}
                 </p>
 
                 <p>
                   <span className="font-semibold">End Date:</span>{" "}
-                  {b.endDate ? new Date(b.endDate).toLocaleString() : "—"}
+                  {formatDate(b.endDate)}
                 </p>
 
                 <p>
@@ -217,12 +217,10 @@ export default function BookingPage() {
                   )}
                 </p>
               </div>
-              {/* ✅ END ADDED BLOCK */}
 
-              {/* ACTION BUTTONS */}
+              {/* Action buttons */}
               {b.status !== "cancelled" && (
                 <div className="flex gap-3 mt-4">
-
                   <Link
                     to={`/edit-booking/${b._id}`}
                     state={{ booking: b }}
@@ -255,6 +253,7 @@ export default function BookingPage() {
                 </div>
               )}
 
+              {/* Review Section */}
               {b.status === "completed" && (
                 <div className="mt-4 border-t pt-3">
                   {existingReview ? (
@@ -263,9 +262,7 @@ export default function BookingPage() {
                       <p className="text-yellow-500 text-xl">
                         {"★".repeat(existingReview.rating)}
                       </p>
-                      <p className="text-gray-700">
-                        {existingReview.comment}
-                      </p>
+                      <p className="text-gray-700">{existingReview.comment}</p>
                     </div>
                   ) : (
                     <div>
@@ -314,6 +311,7 @@ export default function BookingPage() {
           );
         })}
 
+      {/* Pagination */}
       {!loading && total > limit && (
         <div className="flex justify-center gap-3 mt-6">
           <button
