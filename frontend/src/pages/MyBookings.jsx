@@ -8,7 +8,6 @@ export default function BookingPage() {
   const [reviews, setReviews] = useState({});
   const [submitting, setSubmitting] = useState(null);
 
-  // FIX: Added loading state so “No bookings found” doesn't flash
   const [loading, setLoading] = useState(true);
 
   // Pagination
@@ -16,7 +15,6 @@ export default function BookingPage() {
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
 
-  // Fetch bookings + reviews
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -28,7 +26,6 @@ export default function BookingPage() {
       setBookings(items);
       setTotal(totalCount);
 
-      // Fetch reviews
       const reviewRes = await API.get("/reviews/my");
       const map = {};
 
@@ -54,7 +51,6 @@ export default function BookingPage() {
     fetchData();
   }, [page]);
 
-  // Cancel booking
   const handleCancel = async (id) => {
     if (!window.confirm("Cancel this booking?")) return;
     try {
@@ -66,7 +62,6 @@ export default function BookingPage() {
     }
   };
 
-  // Stripe Pay Now
   const handlePayNow = async (booking) => {
     try {
       const amount =
@@ -99,14 +94,6 @@ export default function BookingPage() {
     }
   };
 
-  // Cancel payment (frontend only)
-  const handleCancelPaymentFlow = () => {
-    if (window.confirm("Stop the payment process?")) {
-      window.location.href = "/my-bookings";
-    }
-  };
-
-  // Star click
   const handleStarClick = (vehicleId, value) => {
     setReviewInputs((prev) => ({
       ...prev,
@@ -114,7 +101,6 @@ export default function BookingPage() {
     }));
   };
 
-  // Comment change
   const handleCommentChange = (vehicleId, value) => {
     setReviewInputs((prev) => ({
       ...prev,
@@ -122,7 +108,6 @@ export default function BookingPage() {
     }));
   };
 
-  // Submit Review
   const handleSubmitReview = async (booking) => {
     const vId = booking.vehicle._id;
 
@@ -167,17 +152,14 @@ export default function BookingPage() {
         My Bookings
       </h1>
 
-      {/* FIX: Loading state */}
       {loading && (
         <p className="text-center text-gray-500">Loading your bookings...</p>
       )}
 
-      {/* Empty */}
       {!loading && bookings.length === 0 && (
         <p className="text-center text-gray-600">No bookings found.</p>
       )}
 
-      {/* BOOKING LIST */}
       {!loading &&
         bookings.map((b) => {
           const vehicleId = b.vehicle?._id;
@@ -210,11 +192,37 @@ export default function BookingPage() {
                 </p>
               </div>
 
+              {/* ✅ ADDED START DATE, END DATE, PAYMENT STATUS */}
+              <div className="mt-3 text-sm text-gray-700 border-t pt-3 space-y-1">
+                <p>
+                  <span className="font-semibold">Start Date:</span>{" "}
+                  {b.startDate
+                    ? new Date(b.startDate).toLocaleString()
+                    : "—"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">End Date:</span>{" "}
+                  {b.endDate ? new Date(b.endDate).toLocaleString() : "—"}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Payment:</span>{" "}
+                  {isPaid ? (
+                    <span className="text-green-600 font-semibold">Paid</span>
+                  ) : (
+                    <span className="text-orange-600 font-semibold">
+                      Pending
+                    </span>
+                  )}
+                </p>
+              </div>
+              {/* ✅ END ADDED BLOCK */}
+
               {/* ACTION BUTTONS */}
               {b.status !== "cancelled" && (
                 <div className="flex gap-3 mt-4">
 
-                  {/* Edit */}
                   <Link
                     to={`/edit-booking/${b._id}`}
                     state={{ booking: b }}
@@ -226,7 +234,6 @@ export default function BookingPage() {
                     Edit
                   </Link>
 
-                  {/* Cancel */}
                   <button
                     onClick={() => !isPaid && handleCancel(b._id)}
                     disabled={isPaid}
@@ -237,7 +244,6 @@ export default function BookingPage() {
                     Cancel
                   </button>
 
-                  {/* Pay */}
                   {!isPaid && (
                     <button
                       onClick={() => handlePayNow(b)}
@@ -249,7 +255,6 @@ export default function BookingPage() {
                 </div>
               )}
 
-              {/* REVIEW SECTION */}
               {b.status === "completed" && (
                 <div className="mt-4 border-t pt-3">
                   {existingReview ? (
@@ -258,13 +263,14 @@ export default function BookingPage() {
                       <p className="text-yellow-500 text-xl">
                         {"★".repeat(existingReview.rating)}
                       </p>
-                      <p className="text-gray-700">{existingReview.comment}</p>
+                      <p className="text-gray-700">
+                        {existingReview.comment}
+                      </p>
                     </div>
                   ) : (
                     <div>
                       <p className="font-semibold mb-1">Leave a Review</p>
 
-                      {/* Stars */}
                       <div className="flex gap-1 mb-2">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <span
@@ -308,7 +314,6 @@ export default function BookingPage() {
           );
         })}
 
-      {/* Pagination */}
       {!loading && total > limit && (
         <div className="flex justify-center gap-3 mt-6">
           <button
