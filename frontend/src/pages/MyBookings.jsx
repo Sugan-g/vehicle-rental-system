@@ -169,6 +169,7 @@ export default function BookingPage() {
       {bookings.map((b) => {
         const vehicleId = b.vehicle?._id;
         const existingReview = reviews[vehicleId];
+        const isPaid = b?.payment?.status === "paid";
 
         return (
           <div key={b._id} className="border p-4 rounded-xl mb-5 shadow bg-white">
@@ -199,21 +200,27 @@ export default function BookingPage() {
                 <Link
                   to={`/edit-booking/${b._id}`}
                   state={{ booking: b }}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                  }`}
+                  onClick={(e) => isPaid && e.preventDefault()}
                 >
                   Edit
                 </Link>
 
                 {/* Cancel */}
                 <button
-                  onClick={() => handleCancel(b._id)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                  onClick={() => !isPaid && handleCancel(b._id)}
+                  disabled={isPaid}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"
+                  }`}
                 >
                   Cancel
                 </button>
 
                 {/* SHOW PAY BUTTONS ONLY IF PAYMENT NOT DONE */}
-                {b?.payment?.status !== "paid" && (
+                {!isPaid && (
                   <button
                     onClick={() => handlePayNow(b)}
                     className="bg-green-600 text-white px-4 py-2 rounded-lg"
@@ -221,12 +228,11 @@ export default function BookingPage() {
                     Pay Now
                   </button>
                 )}
-
               </div>
             )}
 
-            {/* REVIEW SECTION */}
-            {b.status !== "cancelled" && (
+            {/* REVIEW SECTION — only show when completed */}
+            {b.status === "completed" && (
               <div className="mt-4 border-t pt-3">
                 {existingReview ? (
                   <div>
