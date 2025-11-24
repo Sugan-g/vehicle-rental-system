@@ -19,16 +19,14 @@ const emailTemplate = (title, message, booking, vehicle) => `
   </div>
 `;
 
-// Calculate days difference
+// Day difference calculator
 const dayDiffCalc = (startDate, endDate) => {
     return Math.ceil(
         (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)
     );
 };
 
-// ============================
-//  Create Booking
-// ============================
+// =============== Create Booking ====================
 export const createBooking = async (req, res) => {
     try {
         const { vehicleId, startDate, endDate } = req.body;
@@ -49,7 +47,6 @@ export const createBooking = async (req, res) => {
             return res.status(400).json({ message: "Booking already exists for these dates" });
         }
 
-        // Calculate days
         const dayDiff = dayDiffCalc(startDate, endDate);
         if (dayDiff <= 0)
             return res.status(400).json({ message: "Invalid date range" });
@@ -65,21 +62,22 @@ export const createBooking = async (req, res) => {
             totalAmount,
         });
 
-        await sendEmail(
+        // Respond immediately
+        res.json({ message: "Booked Successfully! Email will arrive shortly.", booking });
+
+        // Send email in background (non-blocking)
+        sendEmail(
             req.user.email,
             "Booking Confirmed",
             emailTemplate("Booking Confirmed", "Your booking was successful!", booking, vehicle)
-        );
+        ).catch(console.error);
 
-        res.json({ message: "Booked Successfully! Email Sent!", booking });
     } catch (error) {
         res.status(500).json({ message: "Booking failed", error: error.message });
     }
 };
 
-// ============================
-//  Get My Bookings (User) — Paginated
-// ============================
+// =============== Get My Bookings ====================
 export const getMyBookings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -89,28 +87,19 @@ export const getMyBookings = async (req, res) => {
         const total = await Booking.countDocuments({ user: req.user._id });
 
         const bookings = await Booking.find({ user: req.user._id })
-            .populate("vehicle", "make model pricePerDay images location") // fixed 'image' → 'images'
+            .populate("vehicle", "make model pricePerDay images location")
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
 
-        res.json({
-            data: bookings,
-            total,
-            page,
-            limit,
-        });
+        res.json({ data: bookings, total, page, limit });
+
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to fetch user bookings",
-            error: error.message,
-        });
+        res.status(500).json({ message: "Failed to fetch user bookings", error: error.message });
     }
 };
 
-// ============================
-//  Get Booking by ID
-// ============================
+// =============== Get Booking By ID ====================
 export const getBookingById = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id).populate("vehicle");
@@ -118,14 +107,13 @@ export const getBookingById = async (req, res) => {
             return res.status(404).json({ message: "Booking not found" });
 
         res.json(booking);
+
     } catch (error) {
         res.status(500).json({ message: "Failed to get booking", error: error.message });
     }
 };
 
-// ============================
-//  Update Booking (Fix total amount recalculation)
-// ============================
+// =============== Update Booking ====================
 export const updateBooking = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id).populate("vehicle");
@@ -133,8 +121,8 @@ export const updateBooking = async (req, res) => {
             return res.status(404).json({ message: "Booking not found" });
 
         const { startDate, endDate } = req.body;
-
         const dayDiff = dayDiffCalc(startDate, endDate);
+
         if (dayDiff <= 0)
             return res.status(400).json({ message: "Invalid date range" });
 
@@ -143,29 +131,23 @@ export const updateBooking = async (req, res) => {
         booking.startDate = startDate;
         booking.endDate = endDate;
         booking.totalAmount = totalAmount;
-
         await booking.save();
 
-        await sendEmail(
+        res.json({ message: "Booking Updated! Email will arrive shortly.", booking });
+
+        // Background email
+        sendEmail(
             req.user.email,
             "Booking Updated",
-            emailTemplate(
-                "Booking Updated",
-                "Your booking dates have been updated!",
-                booking,
-                booking.vehicle
-            )
-        );
+            emailTemplate("Booking Updated", "Your booking dates were updated!", booking, booking.vehicle)
+        ).catch(console.error);
 
-        res.json({ message: "Booking Updated! Email Sent!", booking });
     } catch (error) {
         res.status(500).json({ message: "Update failed", error: error.message });
     }
 };
 
-// ============================
-//  Cancel Booking
-// ============================
+// =============== Cancel Booking ====================
 export const deleteBooking = async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id).populate("vehicle");
@@ -175,26 +157,21 @@ export const deleteBooking = async (req, res) => {
         booking.status = "cancelled";
         await booking.save();
 
-        await sendEmail(
+        res.json({ message: "Booking Cancelled! Email will arrive shortly." });
+
+        // Background email
+        sendEmail(
             req.user.email,
             "Booking Cancelled",
-            emailTemplate(
-                "Booking Cancelled",
-                "Your booking has been cancelled!",
-                booking,
-                booking.vehicle
-            )
-        );
+            emailTemplate("Booking Cancelled", "Your booking has been cancelled.", booking, booking.vehicle)
+        ).catch(console.error);
 
-        res.json({ message: "Booking Cancelled! Email Sent!" });
     } catch (error) {
         res.status(500).json({ message: "Cancel failed", error: error.message });
     }
 };
 
-// ============================
-//  Admin → Get ALL Bookings (Paginated)
-// ============================
+// =============== Admin: All Bookings ====================
 export const getAllBookings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -210,16 +187,9 @@ export const getAllBookings = async (req, res) => {
             .limit(limit)
             .sort({ createdAt: -1 });
 
-        res.json({
-            data: bookings,
-            total,
-            page,
-            limit,
-        });
+        res.json({ data: bookings, total, page, limit });
+
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to fetch all bookings",
-            error: error.message,
-        });
+        res.status(500).json({ message: "Failed to fetch all bookings", error: error.message });
     }
 };
