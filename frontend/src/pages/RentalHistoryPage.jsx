@@ -3,23 +3,23 @@ import API from "../api/api.js";
 
 export default function RentalHistoryPage() {
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true); // NEW
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await API.get("/bookings/my");
-
-        console.log("My Bookings:", res.data);
-
-        // FIX: Backend returns { data: [], total: N }
         const items = res?.data?.data || [];
 
         setBookings(Array.isArray(items) ? items : []);
       } catch (error) {
         console.error("Error fetching bookings:", error);
-        setBookings([]); // safety
+        setBookings([]);
+      } finally {
+        setLoading(false); // NEW
       }
     };
+
     fetchBookings();
   }, []);
 
@@ -42,9 +42,22 @@ export default function RentalHistoryPage() {
         My Rentals
       </h2>
 
-      {bookings.length === 0 ? (
-        <p className="text-center text-gray-600">No rental history available</p>
-      ) : (
+      {/* LOADING MESSAGE */}
+      {loading && (
+        <p className="text-center text-gray-600 animate-pulse">
+          Loading your rental history...
+        </p>
+      )}
+
+      {/* NO DATA */}
+      {!loading && bookings.length === 0 && (
+        <p className="text-center text-gray-500">
+          No rental history available
+        </p>
+      )}
+
+      {/* DATA FOUND */}
+      {!loading && bookings.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {bookings.map((b) => {
             const status = b.paymentStatus || b.status || "Unknown";
