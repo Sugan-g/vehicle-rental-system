@@ -90,7 +90,7 @@ export default function HomePage() {
             )}
 
             {/*  ADMIN ONLY PIE CHART */}
-            {isAdmin && <DashboardCharts />} 
+            {/* {isAdmin && <DashboardCharts />}  */}
         </div>
     );
 }
