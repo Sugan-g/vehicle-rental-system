@@ -27,6 +27,7 @@ router.put("/:id/cancel", protect, deleteBooking);
 // User → Create booking
 router.post("/", protect, createBooking);
 
+// GET: /bookings/admin/stats
 router.get("/admin/stats", async (req, res) => {
     try {
         const booked = await Booking.countDocuments({ status: "booked" });
@@ -34,10 +35,11 @@ router.get("/admin/stats", async (req, res) => {
 
         res.json({ booked, cancelled });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Failed to load stats" });
+        console.log(error);
+        res.status(500).json({ message: "Server error" });
     }
 });
+
 
 
 export default router;
