@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import API from "../api/api.js";
+import downloadProfilePDF from "../components/profilePDF";
 
 export default function AdminDashboard() {
     const [vehicles, setVehicles] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Pagination states (10 per page)
+    // Pagination
     const [bookingPage, setBookingPage] = useState(1);
     const [vehiclePage, setVehiclePage] = useState(1);
     const ITEMS_PER_PAGE = 10;
@@ -19,20 +20,17 @@ export default function AdminDashboard() {
     });
     const [saving, setSaving] = useState(false);
 
-    // Fetch data
+    // Fetch
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [vehicleRes, bookingRes] = await Promise.all([
                     API.get("/vehicles"),
-                    API.get("/bookings?page=1&limit=200") // fetch all bookings
+                    API.get("/bookings?page=1&limit=200")
                 ]);
 
                 setVehicles(vehicleRes.data);
-
-                // FIX: Avoid undefined crash
                 setBookings(bookingRes.data?.data || []);
-
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
@@ -51,7 +49,7 @@ export default function AdminDashboard() {
         );
     }
 
-    // Pagination logic (FIX: Safe slicing)
+    // Pagination
     const paginatedBookings = (bookings || []).slice(
         (bookingPage - 1) * ITEMS_PER_PAGE,
         bookingPage * ITEMS_PER_PAGE
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
     const paidCount = bookings.filter((b) => b.status === "booked").length;
     const cancelledCount = bookings.filter((b) => b.status === "cancelled").length;
 
-    // Modal open
+    // Modal
     const openModal = (vehicle) => {
         setSelectedVehicle(vehicle);
         setFormData({
@@ -97,7 +95,6 @@ export default function AdminDashboard() {
         });
     };
 
-    // Update vehicle
     const handleUpdate = async () => {
         try {
             setSaving(true);
@@ -123,7 +120,7 @@ export default function AdminDashboard() {
                 Admin Dashboard
             </h2>
 
-            {/* Stats */}
+            {/* STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <div className="bg-blue-600 text-white p-6 rounded-xl shadow-md text-center">
                     <h4 className="text-3xl font-bold">{totalVehicles}</h4>
@@ -154,10 +151,18 @@ export default function AdminDashboard() {
                     Recent Bookings
                 </h3>
 
+                {/* PDF BUTTON */}
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={() => downloadProfilePDF(bookings)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                    >
+                        Download Bookings PDF
+                    </button>
+                </div>
+
                 {bookings.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">
-                        No bookings available.
-                    </p>
+                    <p className="text-center text-gray-500 py-4">No bookings available.</p>
                 ) : (
                     <>
                         <table className="w-full text-sm border-collapse">
@@ -203,7 +208,7 @@ export default function AdminDashboard() {
                             </tbody>
                         </table>
 
-                        {/* Booking Pagination */}
+                        {/* PAGINATION */}
                         <div className="flex justify-center mt-6 gap-2">
                             <button
                                 disabled={bookingPage === 1}
@@ -239,7 +244,7 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {/* VEHICLES */}
+            {/* VEHICLES SECTION */}
             <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">Vehicles</h3>
 
@@ -272,7 +277,7 @@ export default function AdminDashboard() {
                             ))}
                         </ul>
 
-                        {/* Vehicle Pagination */}
+                        {/* Vehicles pagination */}
                         <div className="flex justify-center mt-6 gap-2">
                             <button
                                 disabled={vehiclePage === 1}
@@ -308,7 +313,7 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {/* MODAL */}
+            {/* Update Modal */}
             {selectedVehicle && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
@@ -319,9 +324,7 @@ export default function AdminDashboard() {
                             ×
                         </button>
 
-                        <h3 className="text-xl font-bold mb-4 text-center">
-                            Manage Vehicle
-                        </h3>
+                        <h3 className="text-xl font-bold mb-4 text-center">Manage Vehicle</h3>
 
                         <div className="space-y-3">
                             <div>
@@ -342,9 +345,7 @@ export default function AdminDashboard() {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 mb-1">
-                                    Year
-                                </label>
+                                <label className="block text-gray-700 mb-1">Year</label>
                                 <input
                                     type="number"
                                     value={formData.year}
