@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api.js";
-import downloadProfilePDF from "../components/profilePDF";
+import downloadProfilePDF from "../components/ProfilePDF.js";
 
 export default function AdminDashboard() {
     const [vehicles, setVehicles] = useState([]);
