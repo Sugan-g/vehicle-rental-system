@@ -22,7 +22,6 @@ export default function AddVehiclePage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 🔥 FormData for image upload
         const formData = new FormData();
         formData.append("model", model);
         formData.append("brand", brand);
@@ -32,13 +31,10 @@ export default function AddVehiclePage() {
         if (image) formData.append("image", image);
 
         try {
-            const response = await fetch(
-                "https://vehicle-rental-system-pitf.onrender.com/vehicles",
-                {
-                    method: "POST",
-                    body: formData, // Not JSON! Images need multipart/form-data
-                }
-            );
+            const response = await fetch("https://vehicle-rental-system-pitf.onrender.com/vehicles", {
+                method: "POST",
+                body: formData,
+            });
 
             if (response.ok) {
                 alert("Vehicle added successfully!");
@@ -48,102 +44,124 @@ export default function AddVehiclePage() {
             }
         } catch (error) {
             console.error("Error adding vehicle:", error);
-            alert("Failed to add vehicle.");
         }
     };
 
     return (
-        <div className="container mx-auto p-4 mt-20">
-            <h1 className="text-2xl font-bold mb-4">Add New Vehicle</h1>
+        <div className="mt-24 flex justify-center px-4">
+            <div className="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8 mb-10">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+                    Add New Vehicle
+                </h1>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Model */}
-                <div>
-                    <label className="block text-sm font-medium">Model</label>
-                    <input
-                        type="text"
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                        required
-                        className="mt-1 p-2 border rounded w-full"
-                    />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* Brand */}
-                <div>
-                    <label className="block text-sm font-medium">Brand</label>
-                    <input
-                        type="text"
-                        value={brand}
-                        onChange={(e) => setBrand(e.target.value)}
-                        required
-                        className="mt-1 p-2 border rounded w-full"
-                    />
-                </div>
-
-                {/* Price */}
-                <div>
-                    <label className="block text-sm font-medium">Price per Day</label>
-                    <input
-                        type="number"
-                        value={pricePerDay}
-                        onChange={(e) => setPricePerDay(e.target.value)}
-                        required
-                        className="mt-1 p-2 border rounded w-full"
-                    />
-                </div>
-
-                {/* Description */}
-                <div>
-                    <label className="block text-sm font-medium">Description</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        className="mt-1 p-2 border rounded w-full"
-                    ></textarea>
-                </div>
-
-                {/* Availability */}
-                <div>
-                    <label className="block text-sm font-medium">Available</label>
-                    <select
-                        value={isAvailable}
-                        onChange={(e) => setIsAvailable(e.target.value === "true")}
-                        className="mt-1 p-2 border rounded w-full"
-                    >
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                    </select>
-                </div>
-
-                {/* Image Upload */}
-                <div>
-                    <label className="block text-sm font-medium">Vehicle Image</label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="mt-1 p-2 border rounded w-full"
-                    />
-
-                    {preview && (
-                        <img
-                            src={preview}
-                            alt="Preview"
-                            className="mt-3 w-40 rounded-lg shadow"
+                    {/* Model */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Vehicle Model
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Swift, Innova, Creta"
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                            required
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
                         />
-                    )}
-                </div>
+                    </div>
 
-                {/* Submit */}
-                <button
-                    type="submit"
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                >
-                    Add Vehicle
-                </button>
-            </form>
+                    {/* Brand */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Brand
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Maruti Suzuki"
+                            value={brand}
+                            onChange={(e) => setBrand(e.target.value)}
+                            required
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Price */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Price Per Day (₹)
+                        </label>
+                        <input
+                            type="number"
+                            placeholder="Enter rental cost per day"
+                            value={pricePerDay}
+                            onChange={(e) => setPricePerDay(e.target.value)}
+                            required
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            placeholder="Describe the vehicle, features, etc..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            required
+                            className="w-full p-3 min-h-[120px] rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Availability */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Availability
+                        </label>
+                        <select
+                            value={isAvailable}
+                            onChange={(e) => setIsAvailable(e.target.value === "true")}
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        >
+                            <option value="true">Available</option>
+                            <option value="false">Not Available</option>
+                        </select>
+                    </div>
+
+                    {/* Image Upload */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">
+                            Upload Vehicle Image
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="w-full p-3 rounded-xl border border-gray-300"
+                        />
+
+                        {preview && (
+                            <div className="mt-4">
+                                <img
+                                    src={preview}
+                                    alt="Vehicle Preview"
+                                    className="w-48 h-32 object-cover rounded-xl shadow-md"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition"
+                    >
+                        Add Vehicle
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
