@@ -152,14 +152,14 @@ export default function AdminDashboard() {
                 </h3>
 
                 {/* PDF BUTTON */}
-                <div className="flex justify-end mb-4">
+                {/* <div className="flex justify-end mb-4">
                     <button
                         onClick={() => downloadProfilePDF(bookings)}
                         className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                     >
                         Download Bookings PDF
                     </button>
-                </div>
+                </div> */}
 
                 {bookings.length === 0 ? (
                     <p className="text-center text-gray-500 py-4">No bookings available.</p>

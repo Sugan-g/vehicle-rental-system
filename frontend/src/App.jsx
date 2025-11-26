@@ -15,6 +15,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentCancel from "./pages/PaymentCancel.jsx";
+import VehicleDetails from "./pages/VehicleDetails";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
 
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
+           <Route path="/vehicle/:id" element={<VehicleDetails />} />
 
 
           {/* Protected routes (login required) */}
