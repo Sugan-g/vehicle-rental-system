@@ -45,6 +45,7 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/uploads", express.static("uploads"));
 
 // error handlers
 app.use(notFound);

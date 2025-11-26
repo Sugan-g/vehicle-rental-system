@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../middlewares/uploadMiddleware.js";
 import {
     getVehicles,
     getVehicleById,
@@ -15,8 +16,22 @@ router.get("/", getVehicles);
 router.get("/:id", getVehicleById);
 
 // Admin routes
-router.post("/", protect, admin, createVehicle);
-router.put("/:id", protect, admin, updateVehicle);
+router.post(
+    "/",
+    protect,
+    admin,
+    upload.single("image"),  // added multer
+    createVehicle
+);
+
+router.put(
+    "/:id",
+    protect,
+    admin,
+    upload.single("image"), // optional for edit
+    updateVehicle
+);
+
 router.delete("/:id", protect, admin, deleteVehicle);
 
 export default router;
