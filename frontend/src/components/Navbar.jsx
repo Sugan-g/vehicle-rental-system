@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,15 +8,6 @@ export default function Navbar() {
   const { isLoggedIn, role, logout } = useAuth();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [authStatus, setAuthStatus] = useState({
-    loggedIn: isLoggedIn,
-    role,
-  });
-
-  // Sync local state with context
-  useEffect(() => {
-    setAuthStatus({ loggedIn: isLoggedIn, role });
-  }, [isLoggedIn, role]);
 
   const handleLogout = () => {
     logout();
@@ -43,7 +34,7 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-6 items-center">
           <Link to="/">Home</Link>
 
-          {authStatus.loggedIn && (
+          {isLoggedIn && (
             <>
               <Link to="/my-bookings">My Bookings</Link>
               <Link to="/rental-history">Rental History</Link>
@@ -51,7 +42,7 @@ export default function Navbar() {
           )}
 
           {/* Admin only options */}
-          {authStatus.loggedIn && authStatus.role === "admin" && (
+          {isLoggedIn && role === "admin" && (
             <>
               <Link to="/admin" className="text-yellow-400 font-semibold">
                 Admin Dashboard
@@ -64,7 +55,7 @@ export default function Navbar() {
           )}
 
           {/* Login / Logout */}
-          {authStatus.loggedIn ? (
+          {isLoggedIn ? (
             <button
               onClick={handleLogout}
               className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700 transition"
@@ -91,20 +82,23 @@ export default function Navbar() {
             Home
           </Link>
 
-          {authStatus.loggedIn && (
+          {isLoggedIn && (
             <>
               <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>
                 My Bookings
               </Link>
 
-              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>
+              <Link
+                to="/rental-history"
+                onClick={() => setMenuOpen(false)}
+              >
                 Rental History
               </Link>
             </>
           )}
 
           {/* Admin Mobile Menu */}
-          {authStatus.loggedIn && authStatus.role === "admin" && (
+          {isLoggedIn && role === "admin" && (
             <>
               <Link
                 to="/admin"
@@ -125,7 +119,7 @@ export default function Navbar() {
           )}
 
           {/* Login / Logout */}
-          {authStatus.loggedIn ? (
+          {isLoggedIn ? (
             <button
               onClick={() => {
                 handleLogout();
