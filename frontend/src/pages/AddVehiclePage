@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+function AddVehiclePage() {
+    const [model, setModel] = useState("");
+    const [brand, setBrand] = useState("");
+    const [pricePerDay, setPricePerDay] = useState("");
+    const [description, setDescription] = useState("");
+    const [isAvailable, setIsAvailable] = useState(true);
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const newVehicle = {
+            model,
+            brand,
+            pricePerDay,
+            description,
+            isAvailable,
+        };
+
+        try {
+            // Example API call (replace with your actual API or data source)
+            const response = await fetch("https://vehicle-rental-system-pitf.onrender.com/vehicles", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newVehicle),
+            });
+
+            if (response.ok) {
+                alert("Vehicle added successfully!");
+                navigate("/admin");  // Redirect to admin page or vehicle list after adding
+            } else {
+                alert("Error adding vehicle!");
+            }
+        } catch (error) {
+            console.error("Error adding vehicle:", error);
+            alert("Failed to add vehicle.");
+        }
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <h1 className="text-2xl font-bold mb-4">Add New Vehicle</h1>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label htmlFor="model" className="block text-sm font-medium">Model</label>
+                    <input
+                        type="text"
+                        id="model"
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
+                        required
+                        className="mt-1 p-2 border rounded w-full"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="brand" className="block text-sm font-medium">Brand</label>
+                    <input
+                        type="text"
+                        id="brand"
+                        value={brand}
+                        onChange={(e) => setBrand(e.target.value)}
+                        required
+                        className="mt-1 p-2 border rounded w-full"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="pricePerDay" className="block text-sm font-medium">Price per Day</label>
+                    <input
+                        type="number"
+                        id="pricePerDay"
+                        value={pricePerDay}
+                        onChange={(e) => setPricePerDay(e.target.value)}
+                        required
+                        className="mt-1 p-2 border rounded w-full"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="description" className="block text-sm font-medium">Description</label>
+                    <textarea
+                        id="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                        className="mt-1 p-2 border rounded w-full"
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="isAvailable" className="block text-sm font-medium">Available</label>
+                    <select
+                        id="isAvailable"
+                        value={isAvailable}
+                        onChange={(e) => setIsAvailable(e.target.value === "true")}
+                        className="mt-1 p-2 border rounded w-full"
+                    >
+                        <option value={true}>Yes</option>
+                        <option value={false}>No</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button
+                        type="submit"
+                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                    >
+                        Add Vehicle
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+export default AddVehiclePage;

@@ -12,10 +12,10 @@ import EditBooking from "./pages/EditBooking.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
-
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentCancel from "./pages/PaymentCancel.jsx";
-import VehicleDetails from "./pages/VehicleDetails";
+import VehicleDetails from "./pages/VehicleDetails.jsx"; // Ensure this is imported
+import AddVehiclePage from "./pages/AddVehiclePage.jsx"; // Ensure this is imported
 
 function App() {
   return (
@@ -25,14 +25,12 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/vehicle/:id" element={<VehiclePage />} />
+          <Route path="/vehicle/:id" element={<VehiclePage />} /> {/* General vehicle page */}
+          <Route path="/vehicle-details/:id" element={<VehicleDetails />} /> {/* Vehicle details page */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
-           <Route path="/vehicle/:id" element={<VehicleDetails />} />
-
 
           {/* Protected routes (login required) */}
           <Route
@@ -74,6 +72,14 @@ function App() {
             element={
               <AdminRoute>
                 <AdminPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/add-vehicle"
+            element={
+              <AdminRoute>
+                <AddVehiclePage />
               </AdminRoute>
             }
           />
