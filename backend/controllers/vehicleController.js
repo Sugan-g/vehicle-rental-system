@@ -102,7 +102,7 @@ export const updateVehicle = async (req, res) => {
             return sendResponse(res, 404, false, "Vehicle not found");
         }
 
-        Object.assign(vehicle, req.body);
+        Object.assign(vehicle, req.body); // Update the vehicle fields with new data
         const updated = await vehicle.save();
 
         return sendResponse(res, 200, true, "Vehicle updated successfully", updated);
@@ -124,7 +124,7 @@ export const deleteVehicle = async (req, res) => {
             return sendResponse(res, 404, false, "Vehicle not found");
         }
 
-        await vehicle.deleteOne();
+        await vehicle.deleteOne(); // Delete the vehicle
         return sendResponse(res, 200, true, "Vehicle deleted successfully");
 
     } catch (error) {
