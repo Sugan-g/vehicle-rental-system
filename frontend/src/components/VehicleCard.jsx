@@ -1,18 +1,12 @@
 import { Link } from "react-router-dom";
 
 export default function VehicleCard({ vehicle }) {
-  const backendURL = "https://vehicle-rental-system-pitf.onrender.com";
-
-  // Determine correct image URL
-  const imageUrl = vehicle.images?.[0]
-    ? vehicle.images[0].startsWith("http")
-      ? vehicle.images[0] // Cloudinary URL
-      : `${backendURL}/${vehicle.images[0]}` // Local fallback
-    : "/placeholder.jpg"; // Fallback placeholder
+  // Use the first image or a placeholder
+  const imageUrl = vehicle.images?.[0] || "/placeholder.jpg";
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
-
+      
       {/* Image */}
       <img
         src={imageUrl}
