@@ -31,7 +31,7 @@ export default function AddVehiclePage() {
         if (image) formData.append("image", image);
 
         try {
-            const response = await fetch("https://vehicle-rental-system-pitf.onrender.com/vehicles", {
+            const response = await fetch("https://vehicle-rental-system-pitf.onrender.com/api/vehicles", {
                 method: "POST",
                 body: formData,
             });
