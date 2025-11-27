@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function AddVehiclePage() {
     const [model, setModel] = useState("");
-    const [brand, setBrand] = useState(""); // user sees "Brand"
-    const [year, setYear] = useState("");   // NEW: Year
+    const [brand, setBrand] = useState(""); // sent as make
+    const [year, setYear] = useState("");
     const [pricePerDay, setPricePerDay] = useState("");
     const [description, setDescription] = useState("");
     const [isAvailable, setIsAvailable] = useState(true);
+    const [location, setLocation] = useState(""); // NEW
+    const [type, setType] = useState("");         // NEW
 
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState("");
@@ -25,11 +27,13 @@ export default function AddVehiclePage() {
 
         const formData = new FormData();
         formData.append("model", model);
-        formData.append("make", brand);  // Backend expects "make"
-        formData.append("year", year);   // NEW: send year
+        formData.append("make", brand);
+        formData.append("year", year);
         formData.append("pricePerDay", Number(pricePerDay));
         formData.append("description", description);
-        formData.append("isAvailable", isAvailable); // boolean
+        formData.append("isAvailable", isAvailable);
+        formData.append("location", location); // send location
+        formData.append("type", type);         // send type
         if (image) formData.append("image", image);
 
         try {
@@ -112,6 +116,36 @@ export default function AddVehiclePage() {
                             required
                             min="1900"
                             max={new Date().getFullYear()}
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Location
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Bangalore"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            required
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Type */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Type
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Sedan, SUV, Hatchback"
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                            required
                             className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
                         />
                     </div>
