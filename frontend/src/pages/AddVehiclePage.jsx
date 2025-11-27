@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function AddVehiclePage() {
     const [model, setModel] = useState("");
     const [brand, setBrand] = useState(""); // user sees "Brand"
+    const [year, setYear] = useState("");   // NEW: Year
     const [pricePerDay, setPricePerDay] = useState("");
     const [description, setDescription] = useState("");
     const [isAvailable, setIsAvailable] = useState(true);
@@ -24,7 +25,8 @@ export default function AddVehiclePage() {
 
         const formData = new FormData();
         formData.append("model", model);
-        formData.append("make", brand); // Backend expects "make"
+        formData.append("make", brand);  // Backend expects "make"
+        formData.append("year", year);   // NEW: send year
         formData.append("pricePerDay", Number(pricePerDay));
         formData.append("description", description);
         formData.append("isAvailable", isAvailable); // boolean
@@ -39,7 +41,6 @@ export default function AddVehiclePage() {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        // Don't set Content-Type when using FormData
                     },
                     body: formData,
                 }
@@ -83,7 +84,7 @@ export default function AddVehiclePage() {
                         />
                     </div>
 
-                    {/* Brand (sent as "make") */}
+                    {/* Brand */}
                     <div>
                         <label className="block text-gray-700 font-medium mb-1">
                             Brand
@@ -94,6 +95,23 @@ export default function AddVehiclePage() {
                             value={brand}
                             onChange={(e) => setBrand(e.target.value)}
                             required
+                            className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
+                        />
+                    </div>
+
+                    {/* Year */}
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-1">
+                            Year
+                        </label>
+                        <input
+                            type="number"
+                            placeholder="e.g., 2023"
+                            value={year}
+                            onChange={(e) => setYear(e.target.value)}
+                            required
+                            min="1900"
+                            max={new Date().getFullYear()}
                             className="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
                         />
                     </div>
