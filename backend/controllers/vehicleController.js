@@ -1,6 +1,6 @@
 import Vehicle from "../models/Vehicle.js";
 
-//  IMPORTANT FIX → use your config file instead of raw cloudinary
+// use your config file instead of raw cloudinary
 import cloudinary from "../config/cloudinary.js";
 
 // Helper: Send response
