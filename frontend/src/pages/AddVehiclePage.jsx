@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AddVehiclePage() {
     const [model, setModel] = useState("");
-    const [brand, setBrand] = useState("");
+    const [brand, setBrand] = useState(""); // user sees "Brand"
     const [pricePerDay, setPricePerDay] = useState("");
     const [description, setDescription] = useState("");
     const [isAvailable, setIsAvailable] = useState(true);
@@ -24,13 +24,13 @@ export default function AddVehiclePage() {
 
         const formData = new FormData();
         formData.append("model", model);
-        formData.append("brand", brand);
+        formData.append("make", brand); // Backend expects "make"
         formData.append("pricePerDay", Number(pricePerDay));
         formData.append("description", description);
-        formData.append("isAvailable", isAvailable);
+        formData.append("isAvailable", isAvailable); // boolean
         if (image) formData.append("image", image);
 
-       try {
+        try {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
@@ -39,20 +39,23 @@ export default function AddVehiclePage() {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        // Don't set Content-Type when using FormData
                     },
-                    body: formData,  // DON'T add Content-Type for FormData
+                    body: formData,
                 }
             );
 
+            const result = await response.json();
 
-            if (response.ok) {
+            if (response.ok && result.success) {
                 alert("Vehicle added successfully!");
                 navigate("/admin");
             } else {
-                alert("Error adding vehicle!");
+                alert(result.message || "Error adding vehicle!");
             }
         } catch (error) {
             console.error("Error adding vehicle:", error);
+            alert("Something went wrong while adding the vehicle.");
         }
     };
 
@@ -80,7 +83,7 @@ export default function AddVehiclePage() {
                         />
                     </div>
 
-                    {/* Brand */}
+                    {/* Brand (sent as "make") */}
                     <div>
                         <label className="block text-gray-700 font-medium mb-1">
                             Brand
