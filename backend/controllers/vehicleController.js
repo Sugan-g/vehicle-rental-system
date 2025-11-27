@@ -1,6 +1,4 @@
 import Vehicle from "../models/Vehicle.js";
-
-// use your config file instead of raw cloudinary
 import cloudinary from "../config/cloudinary.js";
 
 // Helper: Send response
@@ -8,14 +6,11 @@ const sendResponse = (res, status, success, message, data = null) => {
     return res.status(status).json({ success, message, data });
 };
 
-// Cloudinary Upload Helper (Promise wrapper)
+// Cloudinary Upload Helper
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-            {
-                folder: "vehicles",
-                resource_type: "image",
-            },
+            { folder: "vehicles", resource_type: "image" },
             (error, result) => {
                 if (error) reject(error);
                 else resolve(result);
@@ -32,7 +27,7 @@ export const getVehicles = async (req, res) => {
     try {
         const vehicles = await Vehicle.find({}).sort({ createdAt: -1 });
 
-        const formatted = vehicles.map(v => ({
+        const formatted = vehicles.map((v) => ({
             _id: v._id,
             make: v.make,
             model: v.model,
@@ -44,11 +39,10 @@ export const getVehicles = async (req, res) => {
             description: v.description,
             type: v.type,
             available: v.available,
-            createdAt: v.createdAt
+            createdAt: v.createdAt,
         }));
 
         return sendResponse(res, 200, true, "Vehicles fetched successfully", formatted);
-
     } catch (error) {
         console.error("Error fetching vehicles:", error);
         return sendResponse(res, 500, false, "Server error while fetching vehicles", error.message);
@@ -61,7 +55,6 @@ export const getVehicles = async (req, res) => {
 export const getVehicleById = async (req, res) => {
     try {
         const vehicle = await Vehicle.findById(req.params.id);
-
         if (!vehicle) return sendResponse(res, 404, false, "Vehicle not found");
 
         const formatted = {
@@ -76,11 +69,10 @@ export const getVehicleById = async (req, res) => {
             description: vehicle.description,
             type: vehicle.type,
             available: vehicle.available,
-            createdAt: vehicle.createdAt
+            createdAt: vehicle.createdAt,
         };
 
         return sendResponse(res, 200, true, "Vehicle fetched successfully", formatted);
-
     } catch (error) {
         console.error("Error fetching vehicle:", error);
         return sendResponse(res, 500, false, "Server error while fetching vehicle", error.message);
@@ -98,8 +90,6 @@ export const createVehicle = async (req, res) => {
         }
 
         let imageUrl = "";
-
-        // Cloudinary upload instead of local
         if (req.file) {
             const uploaded = await uploadToCloudinary(req.file.buffer);
             imageUrl = uploaded.secure_url;
@@ -114,13 +104,12 @@ export const createVehicle = async (req, res) => {
             type: req.body.type,
             description: req.body.description,
             available: req.body.isAvailable,
-            images: imageUrl ? [imageUrl] : []
+            images: imageUrl ? [imageUrl] : [],
         };
 
         const newVehicle = await Vehicle.create(vehicleData);
 
         return sendResponse(res, 201, true, "Vehicle created successfully", newVehicle);
-
     } catch (error) {
         console.error("Error creating vehicle:", error);
         return sendResponse(res, 500, false, "Failed to create vehicle", error.message);
@@ -133,22 +122,17 @@ export const createVehicle = async (req, res) => {
 export const updateVehicle = async (req, res) => {
     try {
         const vehicle = await Vehicle.findById(req.params.id);
-
-        if (!vehicle)
-            return sendResponse(res, 404, false, "Vehicle not found");
+        if (!vehicle) return sendResponse(res, 404, false, "Vehicle not found");
 
         Object.assign(vehicle, req.body);
 
-        // If image uploaded, replace existing one
         if (req.file) {
             const uploaded = await uploadToCloudinary(req.file.buffer);
             vehicle.images = [uploaded.secure_url];
         }
 
         const updatedVehicle = await vehicle.save();
-
         return sendResponse(res, 200, true, "Vehicle updated successfully", updatedVehicle);
-
     } catch (error) {
         console.error("Error updating vehicle:", error);
         return sendResponse(res, 500, false, "Failed to update vehicle", error.message);
@@ -161,14 +145,10 @@ export const updateVehicle = async (req, res) => {
 export const deleteVehicle = async (req, res) => {
     try {
         const vehicle = await Vehicle.findById(req.params.id);
-
-        if (!vehicle)
-            return sendResponse(res, 404, false, "Vehicle not found");
+        if (!vehicle) return sendResponse(res, 404, false, "Vehicle not found");
 
         await vehicle.deleteOne();
-
         return sendResponse(res, 200, true, "Vehicle deleted successfully");
-
     } catch (error) {
         console.error("Error deleting vehicle:", error);
         return sendResponse(res, 500, false, "Failed to delete vehicle", error.message);
