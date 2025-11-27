@@ -1,37 +1,37 @@
 import express from "express";
-import upload from "../middlewares/uploadMiddleware.js"; // File upload middleware
+import upload from "../middlewares/uploadMiddleware.js";
 import {
     getVehicles,
     getVehicleById,
     createVehicle,
     updateVehicle,
     deleteVehicle
-} from "../controllers/vehicleController.js";  // Controller functions
-import { protect, admin } from "../middlewares/authMiddleware.js";  // Authentication and Admin authorization middleware
+} from "../controllers/vehicleController.js";
+import { protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 // Public routes
-router.get("/vehicles", getVehicles); // Get all vehicles
-router.get("/vehicles/:id", getVehicleById); // Get a single vehicle by ID
+router.get("/", getVehicles);            // GET /api/vehicles
+router.get("/:id", getVehicleById);      // GET /api/vehicles/:id
 
-// Admin-only routes (protected routes)
+// Admin-only routes
 router.post(
-    "/vehicles",
+    "/",
     protect,
     admin,
-    upload.single("image"), // Handle image upload using Multer (optional)
+    upload.single("image"),
     createVehicle
-);
+);                                      // POST /api/vehicles
 
 router.put(
-    "/vehicles/:id",
+    "/:id",
     protect,
     admin,
-    upload.single("image"), // Handle image upload using Multer (optional)
+    upload.single("image"),
     updateVehicle
-);
+);                                      // PUT /api/vehicles/:id
 
-router.delete("/vehicles/:id", protect, admin, deleteVehicle); // Delete a vehicle by ID
+router.delete("/:id", protect, admin, deleteVehicle); // DELETE /api/vehicles/:id
 
 export default router;
