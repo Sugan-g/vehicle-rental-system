@@ -1,17 +1,22 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
-// Folder to store uploaded images
+// Persistent disk folder
+const uploadFolder = "/mnt/data/uploads/vehicles/";
+
+// Ensure folder exists
+fs.mkdirSync(uploadFolder, { recursive: true });
+
 const storage = multer.diskStorage({
     destination(req, file, cb) {
-        cb(null, "uploads/vehicles/");  // Folder where images will be stored
+        cb(null, uploadFolder);
     },
     filename(req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));  // Unique file name with extension
+        cb(null, Date.now() + path.extname(file.originalname));
     },
 });
 
-// Set up multer to use the storage configuration
 const upload = multer({ storage });
 
 export default upload;
