@@ -30,11 +30,20 @@ export default function AddVehiclePage() {
         formData.append("isAvailable", isAvailable);
         if (image) formData.append("image", image);
 
-        try {
-            const response = await fetch("https://vehicle-rental-system-pitf.onrender.com/api/vehicles", {
-                method: "POST",
-                body: formData,
-            });
+       try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                "https://vehicle-rental-system-pitf.onrender.com/api/vehicles",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,  // DON'T add Content-Type for FormData
+                }
+            );
+
 
             if (response.ok) {
                 alert("Vehicle added successfully!");
