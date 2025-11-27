@@ -1,5 +1,7 @@
 import Vehicle from "../models/Vehicle.js";
-import { v2 as cloudinary } from "cloudinary";
+
+//  IMPORTANT FIX → use your config file instead of raw cloudinary
+import cloudinary from "../config/cloudinary.js";
 
 // Helper: Send response
 const sendResponse = (res, status, success, message, data = null) => {
@@ -10,7 +12,10 @@ const sendResponse = (res, status, success, message, data = null) => {
 const uploadToCloudinary = (fileBuffer) => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-            { folder: "vehicles" }, // Cloudinary folder
+            {
+                folder: "vehicles",
+                resource_type: "image",
+            },
             (error, result) => {
                 if (error) reject(error);
                 else resolve(result);
