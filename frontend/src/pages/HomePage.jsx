@@ -17,10 +17,14 @@ export default function HomePage() {
         const fetchVehicles = async () => {
             try {
                 const res = await API.get("/vehicles");
-                setVehicles(res.data);
-                setFilteredVehicles(res.data);
+                // Ensure vehiclesArray is always an array
+                const vehiclesArray = Array.isArray(res.data.data) ? res.data.data : [];
+                setVehicles(vehiclesArray);
+                setFilteredVehicles(vehiclesArray);
             } catch (error) {
                 console.error("Error fetching vehicles:", error);
+                setVehicles([]);
+                setFilteredVehicles([]);
             } finally {
                 setLoading(false);
             }
@@ -29,18 +33,20 @@ export default function HomePage() {
         fetchVehicles();
     }, []);
 
-    //  Live search filter
+    // Live search filter
     useEffect(() => {
         const search = searchTerm.toLowerCase();
 
-        const result = vehicles.filter((v) => {
-            return (
-                (v?.make || "").toLowerCase().includes(search) ||
-                (v?.model || "").toLowerCase().includes(search) ||
-                (v?.type || "").toLowerCase().includes(search) ||
-                (v?.location || "").toLowerCase().includes(search)
-            );
-        });
+        const result = Array.isArray(vehicles)
+            ? vehicles.filter((v) => {
+                  return (
+                      (v?.make || "").toLowerCase().includes(search) ||
+                      (v?.model || "").toLowerCase().includes(search) ||
+                      (v?.type || "").toLowerCase().includes(search) ||
+                      (v?.location || "").toLowerCase().includes(search)
+                  );
+              })
+            : [];
 
         setFilteredVehicles(result);
     }, [searchTerm, vehicles]);
@@ -90,7 +96,7 @@ export default function HomePage() {
             )}
 
             {/*  ADMIN ONLY PIE CHART */}
-            {/* {isAdmin && <DashboardCharts />}  */}
+            {isAdmin && <DashboardCharts />}
         </div>
     );
 }
