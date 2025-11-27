@@ -1,14 +1,23 @@
 import Vehicle from "../models/Vehicle.js";
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 // Helper: Send response
 const sendResponse = (res, status, success, message, data = null) => {
     return res.status(status).json({ success, message, data });
 };
 
-// Helper: Build full image URL
-const buildImageURL = (req, filename) => {
-    return `${req.protocol}://${req.get("host")}/uploads/vehicles/${filename}`;
+// Cloudinary Upload Helper (Promise wrapper)
+const uploadToCloudinary = (fileBuffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: "vehicles" }, // Cloudinary folder
+            (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            }
+        );
+        stream.end(fileBuffer);
+    });
 };
 
 // -----------------------------------------------------
@@ -79,16 +88,16 @@ export const getVehicleById = async (req, res) => {
 export const createVehicle = async (req, res) => {
     try {
         const required = ["make", "model", "year", "pricePerDay"];
-
         for (let f of required) {
             if (!req.body[f]) return sendResponse(res, 400, false, `${f} is required`);
         }
 
         let imageUrl = "";
 
+        // Cloudinary upload instead of local
         if (req.file) {
-            const filename = req.file.filename;
-            imageUrl = buildImageURL(req, filename);
+            const uploaded = await uploadToCloudinary(req.file.buffer);
+            imageUrl = uploaded.secure_url;
         }
 
         const vehicleData = {
@@ -125,10 +134,10 @@ export const updateVehicle = async (req, res) => {
 
         Object.assign(vehicle, req.body);
 
+        // If image uploaded, replace existing one
         if (req.file) {
-            const filename = req.file.filename;
-            const imageUrl = buildImageURL(req, filename);
-            vehicle.images = [imageUrl];
+            const uploaded = await uploadToCloudinary(req.file.buffer);
+            vehicle.images = [uploaded.secure_url];
         }
 
         const updatedVehicle = await vehicle.save();
