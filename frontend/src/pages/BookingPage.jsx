@@ -31,17 +31,19 @@ fetchVehicle();
 }, [vehicleId]);
 
 // Fetch reviews
+// Fetch reviews
 useEffect(() => {
-const fetchReviews = async () => {
-try {
-const res = await API.get(`/reviews/${vehicleId}`);
-setReviews(res.data || []);
-} catch (err) {
-console.error("Reviews fetch error:", err);
-}
-};
-fetchReviews();
+  const fetchReviews = async () => {
+    try {
+      const res = await API.get(`/reviews/vehicle/${vehicleId}`); // <--- match backend route
+      setReviews(res.data || []);
+    } catch (err) {
+      console.error("Reviews fetch error:", err);
+    }
+  };
+  fetchReviews();
 }, [vehicleId]);
+
 
 // Booking handler
 const handleBook = async () => {
