@@ -10,7 +10,7 @@ export default function MyReviewsPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 Redirect if user is NOT logged in
+  // Redirect if user is NOT logged in
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/login");

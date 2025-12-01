@@ -140,7 +140,7 @@ export default function VehicleDetails() {
           </div>
         ) : (
           <p className="text-gray-500 mb-4">
-            ⭐ You can review only after completing a booking of this vehicle.
+             You can review only after completing a booking of this vehicle.
           </p>
         )
       ) : (

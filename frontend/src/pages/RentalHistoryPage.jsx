@@ -22,7 +22,7 @@ export default function RentalHistoryPage() {
     fetchBookings();
   }, []);
 
-  // ⭐ PRE-COMPUTE FORMATTED BOOKING DATA (Faster UI)
+  //  PRE-COMPUTE FORMATTED BOOKING DATA (Faster UI)
   const optimizedBookings = useMemo(() => {
     return bookings.map((b) => ({
       ...b,
@@ -54,7 +54,7 @@ export default function RentalHistoryPage() {
         My Rentals
       </h2>
 
-      {/* ⭐ SKELETON LOADING (Faster UX) */}
+      {/* SKELETON LOADING (Faster UX) */}
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-pulse">
           {[1, 2, 3, 4, 5, 6].map((i) => (
