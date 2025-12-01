@@ -38,6 +38,7 @@ export default function Navbar() {
             <>
               <Link to="/my-bookings">My Bookings</Link>
               <Link to="/rental-history">Rental History</Link>
+               <Link to="/my-reviews">My Reviews</Link> 
             </>
           )}
 
@@ -94,6 +95,7 @@ export default function Navbar() {
               >
                 Rental History
               </Link>
+              <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>My Reviews</Link>
             </>
           )}
 

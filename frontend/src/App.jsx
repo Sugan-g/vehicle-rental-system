@@ -16,6 +16,7 @@ import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentCancel from "./pages/PaymentCancel.jsx";
 import VehicleDetails from "./pages/VehicleDetails.jsx"; // Ensure this is imported
 import AddVehiclePage from "./pages/AddVehiclePage.jsx"; // Ensure this is imported
+import MyReviewsPage from "./pages/MyReviewsPage";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
+          <Route path="/my-reviews" element={<MyReviewsPage />} />
 
           {/* Protected routes (login required) */}
           <Route
