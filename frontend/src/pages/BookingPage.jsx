@@ -69,7 +69,6 @@ export default function BookingPage() {
     try {
       await API.post("/reviews", {
         vehicleId,
-        userId: "USER_ID_HERE", // Replace with actual logged-in user ID
         rating,
         comment,
       });
@@ -84,7 +83,7 @@ export default function BookingPage() {
       setRating("");
       setComment("");
     } catch (err) {
-      alert("Failed to submit review");
+      alert(err.response?.data?.message || "Failed to submit review");
     }
   };
 
@@ -153,6 +152,7 @@ export default function BookingPage() {
 
         {/* RIGHT SIDE — Reviews + Submit Review */}
         <div className="space-y-6">
+
           {/* Reviews List */}
           <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col">
             <h3 className="text-xl font-bold mb-4">
@@ -216,8 +216,8 @@ export default function BookingPage() {
               </button>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
   );
