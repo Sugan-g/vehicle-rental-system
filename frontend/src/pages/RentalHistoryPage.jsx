@@ -1,30 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import API from "../api/api.js";
 
 export default function RentalHistoryPage() {
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true); // NEW
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await API.get("/bookings/my");
         const items = res?.data?.data || [];
-
         setBookings(Array.isArray(items) ? items : []);
       } catch (error) {
         console.error("Error fetching bookings:", error);
         setBookings([]);
       } finally {
-        setLoading(false); // NEW
+        setLoading(false);
       }
     };
 
     fetchBookings();
   }, []);
 
+  // ⭐ PRE-COMPUTE FORMATTED BOOKING DATA (Faster UI)
+  const optimizedBookings = useMemo(() => {
+    return bookings.map((b) => ({
+      ...b,
+      start: new Date(b.startDate).toLocaleDateString(),
+      end: new Date(b.endDate).toLocaleDateString(),
+      status: (b.paymentStatus || b.status || "unknown").toLowerCase(),
+      price: b?.vehicle?.pricePerDay ?? "0",
+      title: `${b.vehicle?.make || ""} ${b.vehicle?.model || ""}`,
+      location: b.vehicle?.location || "Not available",
+    }));
+  }, [bookings]);
+
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
+    switch (status) {
       case "paid":
         return "text-green-600 bg-green-50 border-green-200";
       case "cancelled":
@@ -42,56 +54,51 @@ export default function RentalHistoryPage() {
         My Rentals
       </h2>
 
-      {/* LOADING MESSAGE */}
+      {/* ⭐ SKELETON LOADING (Faster UX) */}
       {loading && (
-        <p className="text-center text-gray-600 animate-pulse">
-          Loading your rental history...
-        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-pulse">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-200 h-40 rounded-xl shadow-sm"
+            ></div>
+          ))}
+        </div>
       )}
 
-      {/* NO DATA */}
-      {!loading && bookings.length === 0 && (
-        <p className="text-center text-gray-500">
-          No rental history available
-        </p>
+      {/* No Data */}
+      {!loading && optimizedBookings.length === 0 && (
+        <p className="text-center text-gray-500">No rental history available</p>
       )}
 
-      {/* DATA FOUND */}
-      {!loading && bookings.length > 0 && (
+      {/* Display Data */}
+      {!loading && optimizedBookings.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {bookings.map((b) => {
-            const status = b.paymentStatus || b.status || "Unknown";
-            return (
-              <div
-                key={b._id}
-                className="bg-white p-5 shadow-md rounded-xl border hover:shadow-lg transition duration-200"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 truncate">
-                  {b.vehicle?.make} {b.vehicle?.model}
-                </h3>
+          {optimizedBookings.map((b) => (
+            <div
+              key={b._id}
+              className="bg-white p-5 shadow-md rounded-xl border hover:shadow-lg transition"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                {b.title}
+              </h3>
 
-                <p className="text-sm text-gray-700 mt-1">
-                  📍 {b.vehicle?.location || "Location not available"}
-                </p>
+              <p className="text-sm text-gray-700 mt-1">📍 {b.location}</p>
 
-                <div className="mt-3 text-sm text-gray-700 space-y-1">
-                  <p>
-                    📅 {new Date(b.startDate).toLocaleDateString()} →{" "}
-                    {new Date(b.endDate).toLocaleDateString()}
-                  </p>
-                  <p>💰 ₹{b.vehicle?.pricePerDay ?? "0"} /day</p>
-                </div>
-
-                <div
-                  className={`mt-3 px-3 py-1 inline-block rounded-full border font-medium text-sm ${getStatusColor(
-                    status
-                  )}`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </div>
+              <div className="mt-3 text-sm text-gray-700 space-y-1">
+                <p>📅 {b.start} → {b.end}</p>
+                <p>💰 ₹{b.price} /day</p>
               </div>
-            );
-          })}
+
+              <div
+                className={`mt-3 px-3 py-1 inline-block rounded-full border font-medium text-sm ${getStatusColor(
+                  b.status
+                )}`}
+              >
+                {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
