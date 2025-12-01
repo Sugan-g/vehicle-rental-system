@@ -8,11 +8,16 @@ export default function BookingPage() {
 
   const [vehicle, setVehicle] = useState(null);
   const [reviews, setReviews] = useState([]);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch basic vehicle details
+  // Review form
+  const [rating, setRating] = useState("");
+  const [comment, setComment] = useState("");
+
+  // Fetch vehicle details
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
@@ -41,10 +46,12 @@ export default function BookingPage() {
   // Booking handler
   const handleBook = async () => {
     if (loading) return;
-    if (!startDate || !endDate) return alert("Select dates");
+    if (!startDate || !endDate) return alert("Please select dates");
+
     try {
       setLoading(true);
       await API.post("/bookings", { vehicleId, startDate, endDate });
+
       alert("Booked Successfully ✅");
       navigate("/my-bookings");
     } catch (err) {
@@ -54,15 +61,43 @@ export default function BookingPage() {
     }
   };
 
+  // Submit review
+  const handleReviewSubmit = async () => {
+    if (!rating) return alert("Rating required");
+    if (rating < 1 || rating > 5) return alert("Rating must be 1–5");
+
+    try {
+      await API.post("/reviews", {
+        vehicleId,
+        userId: "USER_ID_HERE", // Replace with actual logged-in user ID
+        rating,
+        comment,
+      });
+
+      alert("Review submitted");
+
+      // Refresh reviews
+      const res = await API.get(`/reviews/vehicle/${vehicleId}`);
+      setReviews(res.data || []);
+
+      // Reset form
+      setRating("");
+      setComment("");
+    } catch (err) {
+      alert("Failed to submit review");
+    }
+  };
+
   if (!vehicle) return <div className="text-center mt-10">Loading...</div>;
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-10 md:pt-28 md:px-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-        {/* Vehicle Info + Booking */}
+        {/* LEFT SIDE — Vehicle + Booking */}
         <div className="space-y-6">
-          {/* Basic Vehicle Info */}
+
+          {/* Vehicle Card */}
           <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300">
             {vehicle.image && (
               <img
@@ -72,9 +107,12 @@ export default function BookingPage() {
               />
             )}
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">{vehicle.brand} - {vehicle.model}</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {vehicle.brand} - {vehicle.model}
+              </h2>
               <p className="text-gray-700 mb-1">
-                <strong>Price per day:</strong> ₹{Number(vehicle.pricePerDay).toLocaleString()}
+                <strong>Price per day:</strong> ₹
+                {Number(vehicle.pricePerDay).toLocaleString()}
               </p>
             </div>
           </div>
@@ -82,6 +120,7 @@ export default function BookingPage() {
           {/* Booking Form */}
           <div className="bg-white shadow-lg rounded-xl p-6">
             <h3 className="text-xl font-semibold mb-4">Book This Vehicle</h3>
+
             <div className="space-y-4">
               <div>
                 <label className="block mb-1 font-medium">Start Date</label>
@@ -101,9 +140,9 @@ export default function BookingPage() {
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
+
               <button
                 onClick={handleBook}
-                disabled={loading}
                 className="bg-green-600 hover:bg-green-700 transition-colors text-white w-full py-3 rounded-lg font-semibold"
               >
                 {loading ? "Booking..." : "Confirm Booking"}
@@ -112,19 +151,22 @@ export default function BookingPage() {
           </div>
         </div>
 
-        {/* Reviews Section - Only submitted reviews */}
+        {/* RIGHT SIDE — Reviews + Submit Review */}
         <div className="space-y-6">
+          {/* Reviews List */}
           <div className="bg-white shadow-lg rounded-xl p-6 flex flex-col">
-            <h3 className="text-xl font-bold mb-4">Reviews ({reviews.length})</h3>
+            <h3 className="text-xl font-bold mb-4">
+              Reviews ({reviews.length})
+            </h3>
 
-            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
               {reviews.length === 0 ? (
                 <p className="text-gray-500">No reviews yet.</p>
               ) : (
                 reviews.map((r) => (
                   <div
                     key={r._id}
-                    className="bg-gray-50 p-4 rounded-lg shadow hover:shadow-md transition-shadow"
+                    className="bg-gray-50 p-4 rounded-lg shadow"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-semibold">⭐ {r.rating} / 5</p>
@@ -136,6 +178,42 @@ export default function BookingPage() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+
+          {/* Submit Review */}
+          <div className="bg-white shadow-lg rounded-xl p-6">
+            <h3 className="text-xl font-semibold mb-4">Write a Review</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">Rating (1–5)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  className="border p-2 w-full rounded-lg"
+                  value={rating}
+                  onChange={(e) => setRating(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">Comment</label>
+                <textarea
+                  className="border p-2 w-full rounded-lg"
+                  rows="3"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                ></textarea>
+              </div>
+
+              <button
+                onClick={handleReviewSubmit}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg w-full font-semibold"
+              >
+                Submit Review
+              </button>
             </div>
           </div>
         </div>
