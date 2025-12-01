@@ -94,53 +94,62 @@ setLoading(false);
 
 if (!vehicle) return <div className="text-center mt-10">Loading...</div>;
 
-return ( <div className="container mx-auto px-4 pt-24 pb-6 md:pt-28 md:px-8"> <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+return ( <div className="container mx-auto px-4 pt-24 pb-10 md:pt-28 md:px-8"> <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-    {/* Vehicle Info + Booking Form */}  
+
+    {/* Left Column: Vehicle Info + Booking Form */}  
     <div className="space-y-6">  
-      <div className="bg-white shadow rounded-lg p-4">  
+      {/* Vehicle Info */}  
+      <div className="bg-white shadow rounded-lg overflow-hidden">  
         {vehicle.image && (  
           <img  
             src={vehicle.image}  
             alt={vehicle.model}  
-            className="w-full h-64 object-cover rounded-lg mb-4"  
+            className="w-full h-64 object-cover"  
           />  
         )}  
-        <h2 className="text-xl font-bold mb-2">{vehicle.brand} - {vehicle.model}</h2>  
-        <p className="text-gray-700 mb-1"><strong>Price per day:</strong> ₹{Number(vehicle.pricePerDay).toLocaleString()}</p>  
-        <p className="text-gray-700 mb-1"><strong>Description:</strong> {vehicle.description}</p>  
+        <div className="p-4">  
+          <h2 className="text-2xl font-bold mb-2">{vehicle.brand} - {vehicle.model}</h2>  
+          <p className="text-gray-700 mb-1"><strong>Price per day:</strong> ₹{Number(vehicle.pricePerDay).toLocaleString()}</p>  
+          <p className="text-gray-700 mb-1"><strong>Description:</strong> {vehicle.description}</p>  
+        </div>  
       </div>  
 
+      {/* Booking Form */}  
       <div className="bg-white shadow rounded-lg p-4">  
-        <h3 className="text-lg font-semibold mb-3">Book Vehicle</h3>  
-        <label className="block mb-1 font-medium">Start Date</label>  
-        <input  
-          type="date"  
-          className="border p-2 w-full mb-3 rounded"  
-          value={startDate}  
-          onChange={(e) => setStartDate(e.target.value)}  
-        />  
-        <label className="block mb-1 font-medium">End Date</label>  
-        <input  
-          type="date"  
-          className="border p-2 w-full mb-4 rounded"  
-          value={endDate}  
-          onChange={(e) => setEndDate(e.target.value)}  
-        />  
-        <button  
-          onClick={handleBook}  
-          disabled={loading}  
-          className="bg-green-600 text-white w-full py-2 rounded-md"  
-        >  
-          {loading ? "Booking..." : "Confirm Booking"}  
-        </button>  
+        <h3 className="text-xl font-semibold mb-3">Book Vehicle</h3>  
+        <div className="space-y-3">  
+          <div>  
+            <label className="block mb-1 font-medium">Start Date</label>  
+            <input  
+              type="date"  
+              className="border p-2 w-full rounded"  
+              value={startDate}  
+              onChange={(e) => setStartDate(e.target.value)}  
+            />  
+          </div>  
+          <div>  
+            <label className="block mb-1 font-medium">End Date</label>  
+            <input  
+              type="date"  
+              className="border p-2 w-full rounded"  
+              value={endDate}  
+              onChange={(e) => setEndDate(e.target.value)}  
+            />  
+          </div>  
+          <button  
+            onClick={handleBook}  
+            disabled={loading}  
+            className="bg-green-600 text-white w-full py-2 rounded-md mt-2"  
+          >{loading ? "Booking..." : "Confirm Booking"}</button>  
+        </div>  
       </div>  
     </div>  
 
-    {/* Reviews Section */}  
+    {/* Right Column: Reviews */}  
     <div className="space-y-6">  
       <div className="bg-white shadow rounded-lg p-4">  
-        <h3 className="text-xl font-bold mb-3">Reviews ({reviews.length})</h3>  
+        <h3 className="text-xl font-bold mb-4">Reviews ({reviews.length})</h3>  
 
         {isLoggedIn ? (  
           canReview ? (  
@@ -149,7 +158,7 @@ return ( <div className="container mx-auto px-4 pt-24 pb-6 md:pt-28 md:px-8"> <d
               <select  
                 value={rating}  
                 onChange={(e) => setRating(Number(e.target.value))}  
-                className="border p-1 mb-2 rounded"  
+                className="border p-1 mb-2 rounded w-full"  
               >  
                 {[5,4,3,2,1].map(r => <option key={r} value={r}>{r}</option>)}  
               </select>  
@@ -162,7 +171,7 @@ return ( <div className="container mx-auto px-4 pt-24 pb-6 md:pt-28 md:px-8"> <d
               ></textarea>  
               <button  
                 onClick={submitReview}  
-                className="bg-blue-600 text-white px-4 py-2 rounded"  
+                className="bg-blue-600 text-white px-4 py-2 rounded w-full"  
               >Submit Review</button>  
             </div>  
           ) : (  
@@ -172,7 +181,7 @@ return ( <div className="container mx-auto px-4 pt-24 pb-6 md:pt-28 md:px-8"> <d
           <p className="text-gray-500 mb-4">Login to write a review.</p>  
         )}  
 
-        <div className="space-y-3">  
+        <div className="space-y-3 max-h-[600px] overflow-y-auto">  
           {reviews.length === 0 && <p className="text-gray-500">No reviews yet.</p>}  
           {reviews.map(r => (  
             <div key={r._id} className="bg-gray-50 p-3 rounded shadow">  
