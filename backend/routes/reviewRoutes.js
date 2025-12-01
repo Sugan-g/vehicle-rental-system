@@ -27,6 +27,6 @@ router.get("/my", protect, getMyReviews);
  * @desc    Get all reviews for a specific vehicle
  * @access  Public
  */
-router.get("/:vehicleId", getReviewsByVehicle);
+router.get("/vehicle/:vehicleId", getReviewsByVehicle);
 
 export default router;
