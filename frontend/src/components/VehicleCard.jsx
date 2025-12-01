@@ -17,13 +17,15 @@ export default function VehicleCard({ vehicle }) {
       {/* Details */}
       <div className="p-4 flex flex-col flex-grow text-gray-800">
         <h2 className="text-lg font-semibold mb-1">
-          {vehicle.make} {vehicle.model}
+           {vehicle.model}
         </h2>
 
         <p className="text-sm mb-1">
+          <span className="font-medium">Brand:</span> {vehicle.make}
+        </p>
+         <p className="text-sm mb-1">
           <span className="font-medium">Year:</span> {vehicle.year}
         </p>
-
         <p className="text-sm mb-1">
           <span className="font-medium">Type:</span> {vehicle.type}
         </p>
