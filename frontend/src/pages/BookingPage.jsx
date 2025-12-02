@@ -100,27 +100,34 @@ export default function BookingPage() {
   // SUBMIT REVIEW
   // ------------------------------
   const submitReview = async () => {
-    if (!rating || !comment.trim()) {
-      alert("Rating and comment are required");
-      return;
-    }
+  if (!rating || !comment.trim()) {
+    alert("Rating and comment are required");
+    return;
+  }
 
-    try {
-      await API.post("/reviews", {
-        vehicleId,
-        rating,
-        comment,
-      });
+  if (!vehicleId) {
+    alert("Vehicle ID is missing");
+    return;
+  }
 
-      alert("Review added");
+  try {
+    await API.post("/reviews", {
+      vehicleId,
+      rating: Number(rating),
+      comment,
+    });
 
-      const res = await API.get(`/reviews/vehicle/${vehicleId}`);
-      setReviews(res.data?.data || res.data || []);
-      setHasReviewed(true);
-    } catch (err) {
-      console.error("Review error:", err);
-    }
-  };
+    alert("Review added");
+
+    const res = await API.get(`/reviews/vehicle/${vehicleId}`);
+    setReviews(res.data?.data || res.data || []);
+    setHasReviewed(true);
+  } catch (err) {
+    console.error("Review error:", err.response?.data || err);
+    alert(err.response?.data?.message || "Something went wrong");
+  }
+};
+
 
   if (!vehicle) return <p className="text-center mt-10">Loading...</p>;
 
