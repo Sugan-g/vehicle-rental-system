@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../api/api.js";
-import downloadProfilePDF from "../components/ProfilePDF.js";
+import API from "../api/api";
 
 export default function AdminDashboard() {
     const [vehicles, setVehicles] = useState([]);
@@ -15,38 +14,29 @@ export default function AdminDashboard() {
     const [formData, setFormData] = useState({
         pricePerDay: "",
         year: "",
-        description: ""
+        description: "",
+        location: "",
+        type: "",
     });
     const [saving, setSaving] = useState(false);
 
-    // Fetch data
+    // Fetch all data
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [vehicleRes, bookingRes] = await Promise.all([
                     API.get("/vehicles"),
-                    API.get("/bookings?page=1&limit=200")
+                    API.get("/bookings?page=1&limit=200"),
                 ]);
 
-                setVehicles(
-                    Array.isArray(vehicleRes.data?.data)
-                        ? vehicleRes.data.data
-                        : []
-                );
-
-                setBookings(
-                    Array.isArray(bookingRes.data?.data)
-                        ? bookingRes.data.data
-                        : []
-                );
-
+                setVehicles(vehicleRes.data?.data || []);
+                setBookings(bookingRes.data?.data || []);
             } catch (error) {
-                console.error("Error fetching dashboard data:", error);
+                console.error("Dashboard Fetch Error:", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
@@ -58,25 +48,72 @@ export default function AdminDashboard() {
         );
     }
 
-    // DELETE VEHICLE FUNCTION
+    // DELETE VEHICLE ===================================
     const deleteVehicle = async (id) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this vehicle?");
-        if (!confirmDelete) return;
+        if (!window.confirm("Are you sure you want to delete this vehicle?"))
+            return;
 
         try {
             await API.delete(`/vehicles/${id}`);
 
-            // Remove from UI instantly
             setVehicles((prev) => prev.filter((v) => v._id !== id));
 
             alert("Vehicle deleted successfully");
-        } catch (error) {
-            console.error("Error deleting vehicle:", error);
+        } catch (err) {
+            console.error("Delete failed:", err);
             alert("Failed to delete vehicle");
         }
     };
 
-    // Pagination
+    // OPEN MODAL =======================================
+    const openModal = (vehicle) => {
+        setSelectedVehicle(vehicle);
+        setFormData({
+            pricePerDay: vehicle.pricePerDay || "",
+            year: vehicle.year || "",
+            description: vehicle.description || "",
+            location: vehicle.location || "",
+            type: vehicle.type || "",
+        });
+    };
+
+    // CLOSE MODAL ======================================
+    const closeModal = () => {
+        setSelectedVehicle(null);
+        setFormData({
+            pricePerDay: "",
+            year: "",
+            description: "",
+            location: "",
+            type: "",
+        });
+    };
+
+    // UPDATE VEHICLE ===================================
+    const handleUpdate = async () => {
+        try {
+            setSaving(true);
+
+            await API.put(`/vehicles/${selectedVehicle._id}`, formData);
+
+            setVehicles((prev) =>
+                prev.map((v) =>
+                    v._id === selectedVehicle._id
+                        ? { ...v, ...formData }
+                        : v
+                )
+            );
+
+            closeModal();
+        } catch (err) {
+            console.error("Update Error:", err);
+            alert("Failed to update vehicle");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // PAGINATION ===========================
     const paginatedBookings = bookings.slice(
         (bookingPage - 1) * ITEMS_PER_PAGE,
         bookingPage * ITEMS_PER_PAGE
@@ -89,7 +126,7 @@ export default function AdminDashboard() {
     );
     const totalVehiclePages = Math.ceil(vehicles.length / ITEMS_PER_PAGE);
 
-    // Stats
+    // STATS ===========================================
     const totalRevenue = bookings.reduce((sum, b) => {
         const start = new Date(b.startDate);
         const end = new Date(b.endDate);
@@ -103,51 +140,13 @@ export default function AdminDashboard() {
     const paidCount = bookings.filter((b) => b.status === "booked").length;
     const cancelledCount = bookings.filter((b) => b.status === "cancelled").length;
 
-    // Modal Controls
-    const openModal = (vehicle) => {
-        setSelectedVehicle(vehicle);
-        setFormData({
-            pricePerDay: vehicle.pricePerDay || "",
-            year: vehicle.year || "",
-            description: vehicle.description || ""
-        });
-    };
-
-    const closeModal = () => {
-        setSelectedVehicle(null);
-        setFormData({
-            pricePerDay: "",
-            year: "",
-            description: ""
-        });
-    };
-
-    const handleUpdate = async () => {
-        try {
-            setSaving(true);
-            await API.put(`/vehicles/${selectedVehicle._id}`, formData);
-
-            setVehicles((prev) =>
-                prev.map((v) =>
-                    v._id === selectedVehicle._id ? { ...v, ...formData } : v
-                )
-            );
-
-            closeModal();
-        } catch (error) {
-            console.error("Error updating vehicle:", error);
-        } finally {
-            setSaving(false);
-        }
-    };
-
     return (
         <div className="p-4 sm:p-8 max-w-7xl mx-auto mt-28 sm:mt-32">
             <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-gray-900 text-center">
                 Admin Dashboard
             </h2>
 
-            {/* STATS */}
+            {/* ================== STATS ================== */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <div className="bg-blue-600 text-white p-6 rounded-xl shadow-md text-center">
                     <h4 className="text-3xl font-bold">{totalVehicles}</h4>
@@ -172,98 +171,7 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* BOOKINGS TABLE */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-10 overflow-x-auto">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                    Recent Bookings
-                </h3>
-
-                {bookings.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">
-                        No bookings available.
-                    </p>
-                ) : (
-                    <>
-                        <table className="w-full text-sm border-collapse">
-                            <thead className="bg-gray-100 text-gray-700">
-                                <tr>
-                                    <th className="p-3 text-left">User</th>
-                                    <th className="p-3 text-left">Vehicle</th>
-                                    <th className="p-3 text-left">Start</th>
-                                    <th className="p-3 text-left">End</th>
-                                    <th className="p-3 text-left">Amount</th>
-                                    <th className="p-3 text-left">Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {paginatedBookings.map((b) => (
-                                    <tr key={b._id} className="border-b hover:bg-gray-50">
-                                        <td className="p-3">{b?.user?.name || "Unknown"}</td>
-                                        <td className="p-3">
-                                            {b?.vehicle?.make} {b?.vehicle?.model}
-                                        </td>
-                                        <td className="p-3">
-                                            {new Date(b.startDate).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-3">
-                                            {new Date(b.endDate).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-3 font-medium">
-                                            ₹{b.amount ?? b.vehicle?.pricePerDay ?? 0}
-                                        </td>
-
-                                        <td
-                                            className={`p-3 font-semibold ${
-                                                b.status === "booked"
-                                                    ? "text-green-600"
-                                                    : "text-red-600"
-                                            }`}
-                                        >
-                                            {b.status === "booked" ? "Paid" : "Cancelled"}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                        {/* BOOKINGS PAGINATION */}
-                        <div className="flex justify-center mt-6 gap-2">
-                            <button
-                                disabled={bookingPage === 1}
-                                onClick={() => setBookingPage(bookingPage - 1)}
-                                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-40"
-                            >
-                                Prev
-                            </button>
-
-                            {Array.from({ length: totalBookingPages }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setBookingPage(i + 1)}
-                                    className={`px-3 py-1 rounded ${
-                                        bookingPage === i + 1
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-gray-200"
-                                    }`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
-
-                            <button
-                                disabled={bookingPage === totalBookingPages}
-                                onClick={() => setBookingPage(bookingPage + 1)}
-                                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-40"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* VEHICLES SECTION */}
+            {/* ================== VEHICLES SECTION ================== */}
             <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">Vehicles</h3>
 
@@ -292,7 +200,6 @@ export default function AdminDashboard() {
                                             Manage
                                         </button>
 
-                                        {/* DELETE BUTTON ADDED HERE */}
                                         <button
                                             onClick={() => deleteVehicle(v._id)}
                                             className="bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700"
@@ -340,7 +247,7 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {/* UPDATE MODAL */}
+            {/* ================== UPDATE MODAL ================== */}
             {selectedVehicle && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
@@ -357,17 +264,12 @@ export default function AdminDashboard() {
 
                         <div className="space-y-3">
                             <div>
-                                <label className="block text-gray-700 mb-1">
-                                    Price per Day (₹)
-                                </label>
+                                <label className="block text-gray-700 mb-1">Price per Day</label>
                                 <input
                                     type="number"
                                     value={formData.pricePerDay}
                                     onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            pricePerDay: e.target.value
-                                        })
+                                        setFormData({ ...formData, pricePerDay: e.target.value })
                                     }
                                     className="w-full border rounded-md p-2"
                                 />
@@ -379,27 +281,43 @@ export default function AdminDashboard() {
                                     type="number"
                                     value={formData.year}
                                     onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            year: e.target.value
-                                        })
+                                        setFormData({ ...formData, year: e.target.value })
                                     }
                                     className="w-full border rounded-md p-2"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 mb-1">
-                                    Description
-                                </label>
+                                <label className="block text-gray-700 mb-1">Location</label>
+                                <input
+                                    type="text"
+                                    value={formData.location}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, location: e.target.value })
+                                    }
+                                    className="w-full border rounded-md p-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 mb-1">Vehicle Type</label>
+                                <input
+                                    type="text"
+                                    value={formData.type}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, type: e.target.value })
+                                    }
+                                    className="w-full border rounded-md p-2"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 mb-1">Description</label>
                                 <textarea
                                     rows="3"
                                     value={formData.description}
                                     onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            description: e.target.value
-                                        })
+                                        setFormData({ ...formData, description: e.target.value })
                                     }
                                     className="w-full border rounded-md p-2"
                                 />
