@@ -178,7 +178,7 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <div>
                   <p className="font-semibold text-lg">
-                    {b.vehicle?.make} {b.vehicle?.model}
+                     {b.vehicle?.model} {b.vehicle?.make}
                   </p>
                   <p className="text-sm text-gray-600">📍 {b.vehicle?.location}</p>
                 </div>
