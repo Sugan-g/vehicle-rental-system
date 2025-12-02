@@ -90,7 +90,7 @@ export default function BookingPage() {
       });
 
       alert("Booking successful!");
-      navigate("/my-booking");
+      navigate("/my-bookings");
     } catch (err) {
       console.error("Booking failed:", err.response?.data || err);
       alert(err.response?.data?.message || "Booking failed");
