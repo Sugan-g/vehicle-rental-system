@@ -28,7 +28,6 @@ export default function AdminDashboard() {
                     API.get("/bookings?page=1&limit=200")
                 ]);
 
-                // FIXED VEHICLES RESPONSE
                 setVehicles(
                     Array.isArray(vehicleRes.data?.data)
                         ? vehicleRes.data.data
@@ -58,6 +57,24 @@ export default function AdminDashboard() {
             </div>
         );
     }
+
+    // DELETE VEHICLE FUNCTION
+    const deleteVehicle = async (id) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this vehicle?");
+        if (!confirmDelete) return;
+
+        try {
+            await API.delete(`/vehicles/${id}`);
+
+            // Remove from UI instantly
+            setVehicles((prev) => prev.filter((v) => v._id !== id));
+
+            alert("Vehicle deleted successfully");
+        } catch (error) {
+            console.error("Error deleting vehicle:", error);
+            alert("Failed to delete vehicle");
+        }
+    };
 
     // Pagination
     const paginatedBookings = bookings.slice(
@@ -267,12 +284,22 @@ export default function AdminDashboard() {
                                         - ₹{v.pricePerDay}/day
                                     </div>
 
-                                    <button
-                                        onClick={() => openModal(v)}
-                                        className="mt-2 sm:mt-0 bg-yellow-500 text-white px-4 py-1.5 rounded-md hover:bg-yellow-600"
-                                    >
-                                        Manage
-                                    </button>
+                                    <div className="flex gap-3 mt-2 sm:mt-0">
+                                        <button
+                                            onClick={() => openModal(v)}
+                                            className="bg-yellow-500 text-white px-4 py-1.5 rounded-md hover:bg-yellow-600"
+                                        >
+                                            Manage
+                                        </button>
+
+                                        {/* DELETE BUTTON ADDED HERE */}
+                                        <button
+                                            onClick={() => deleteVehicle(v._id)}
+                                            className="bg-red-600 text-white px-4 py-1.5 rounded-md hover:bg-red-700"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
