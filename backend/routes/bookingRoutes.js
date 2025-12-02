@@ -40,6 +40,17 @@ router.get("/admin/stats", async (req, res) => {
     }
 });
 
+router.delete("/:id", protect, admin, async (req, res) => {
+    try {
+        const booking = await Booking.findByIdAndDelete(req.params.id);
 
+        if (!booking)
+            return res.status(404).json({ message: "Booking not found" });
+
+        res.json({ message: "Booking permanently deleted" });
+    } catch (error) {
+        res.status(500).json({ message: "Delete failed", error: error.message });
+    }
+});
 
 export default router;
