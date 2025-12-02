@@ -32,9 +32,11 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex space-x-6 items-center">
+          {/* Common */}
           <Link to="/">Home</Link>
 
-          {isLoggedIn && (
+          {/* User-only */}
+          {isLoggedIn && role !== "admin" && (
             <>
               <Link to="/my-bookings">My Bookings</Link>
               <Link to="/rental-history">Rental History</Link>
@@ -42,17 +44,15 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Admin only options */}
+          {/* Admin-only */}
           {isLoggedIn && role === "admin" && (
             <>
               <Link to="/admin" className="text-yellow-400 font-semibold">
                 Admin Dashboard
               </Link>
-
               <Link to="/manage-bookings" className="text-yellow-400 font-semibold">
                 Manage Bookings
               </Link>
-
               <Link to="/add-vehicle" className="text-green-400 font-semibold">
                 Add Vehicle
               </Link>
@@ -83,27 +83,27 @@ export default function Navbar() {
         }`}
       >
         <div className="bg-gray-800 p-5 rounded-lg flex flex-col space-y-4 text-center">
+          {/* Common */}
           <Link to="/" onClick={() => setMenuOpen(false)}>
             Home
           </Link>
 
-          {isLoggedIn && (
+          {/* User-only */}
+          {isLoggedIn && role !== "admin" && (
             <>
               <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>
                 My Bookings
               </Link>
-
               <Link to="/rental-history" onClick={() => setMenuOpen(false)}>
                 Rental History
               </Link>
-
               <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>
                 My Reviews
               </Link>
             </>
           )}
 
-          {/* Admin Mobile Menu */}
+          {/* Admin-only */}
           {isLoggedIn && role === "admin" && (
             <>
               <Link
@@ -113,7 +113,6 @@ export default function Navbar() {
               >
                 Admin Dashboard
               </Link>
-
               <Link
                 to="/manage-bookings"
                 onClick={() => setMenuOpen(false)}
@@ -121,7 +120,6 @@ export default function Navbar() {
               >
                 Manage Bookings
               </Link>
-
               <Link
                 to="/add-vehicle"
                 onClick={() => setMenuOpen(false)}
