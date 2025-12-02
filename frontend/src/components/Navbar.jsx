@@ -6,7 +6,6 @@ import { useAuth } from "../context/AuthContext";
 export default function Navbar() {
   const navigate = useNavigate();
   const { isLoggedIn, role, logout } = useAuth();
-
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -36,7 +35,7 @@ export default function Navbar() {
           <Link to="/">Home</Link>
 
           {/* User-only */}
-          {isLoggedIn && role !== "admin" && (
+          {isLoggedIn && role === "user" && (
             <>
               <Link to="/my-bookings">My Bookings</Link>
               <Link to="/rental-history">Rental History</Link>
@@ -47,15 +46,9 @@ export default function Navbar() {
           {/* Admin-only */}
           {isLoggedIn && role === "admin" && (
             <>
-              <Link to="/admin" className="text-yellow-400 font-semibold">
-                Admin Dashboard
-              </Link>
-              <Link to="/manage-bookings" className="text-yellow-400 font-semibold">
-                Manage Bookings
-              </Link>
-              <Link to="/add-vehicle" className="text-green-400 font-semibold">
-                Add Vehicle
-              </Link>
+              <Link to="/admin" className="text-yellow-400 font-semibold">Admin Dashboard</Link>
+              <Link to="/manage-bookings" className="text-yellow-400 font-semibold">Manage Bookings</Link>
+              <Link to="/add-vehicle" className="text-green-400 font-semibold">Add Vehicle</Link>
             </>
           )}
 
@@ -84,49 +77,23 @@ export default function Navbar() {
       >
         <div className="bg-gray-800 p-5 rounded-lg flex flex-col space-y-4 text-center">
           {/* Common */}
-          <Link to="/" onClick={() => setMenuOpen(false)}>
-            Home
-          </Link>
+          <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
 
           {/* User-only */}
-          {isLoggedIn && role !== "admin" && (
+          {isLoggedIn && role === "user" && (
             <>
-              <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>
-                My Bookings
-              </Link>
-              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>
-                Rental History
-              </Link>
-              <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>
-                My Reviews
-              </Link>
+              <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>My Bookings</Link>
+              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>Rental History</Link>
+              <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>My Reviews</Link>
             </>
           )}
 
           {/* Admin-only */}
           {isLoggedIn && role === "admin" && (
             <>
-              <Link
-                to="/admin"
-                onClick={() => setMenuOpen(false)}
-                className="text-yellow-400 font-semibold"
-              >
-                Admin Dashboard
-              </Link>
-              <Link
-                to="/manage-bookings"
-                onClick={() => setMenuOpen(false)}
-                className="text-yellow-400 font-semibold"
-              >
-                Manage Bookings
-              </Link>
-              <Link
-                to="/add-vehicle"
-                onClick={() => setMenuOpen(false)}
-                className="text-green-400 font-semibold"
-              >
-                Add Vehicle
-              </Link>
+              <Link to="/admin" onClick={() => setMenuOpen(false)} className="text-yellow-400 font-semibold">Admin Dashboard</Link>
+              <Link to="/manage-bookings" onClick={() => setMenuOpen(false)} className="text-yellow-400 font-semibold">Manage Bookings</Link>
+              <Link to="/add-vehicle" onClick={() => setMenuOpen(false)} className="text-green-400 font-semibold">Add Vehicle</Link>
             </>
           )}
 
@@ -143,12 +110,8 @@ export default function Navbar() {
             </button>
           ) : (
             <>
-              <Link to="/login" onClick={() => setMenuOpen(false)}>
-                Login
-              </Link>
-              <Link to="/register" onClick={() => setMenuOpen(false)}>
-                Register
-              </Link>
+              <Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link to="/register" onClick={() => setMenuOpen(false)}>Register</Link>
             </>
           )}
         </div>
