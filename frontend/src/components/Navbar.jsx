@@ -46,9 +46,9 @@ export default function Navbar() {
           {/* Admin-only */}
           {isLoggedIn && role === "admin" && (
             <>
-              <Link to="/admin" className=" font-semibold">Admin Dashboard</Link>
               <Link to="/manage-bookings" className=" font-semibold">Manage Bookings</Link>
-              <Link to="/add-vehicle" className=" font-semibold">Add Vehicle</Link>
+              <Link to="/add-vehicle" className=" font-semibold">Manage Vehicle</Link>
+              <Link to="/admin" className=" font-semibold">Admin Dashboard</Link>
             </>
           )}
 
