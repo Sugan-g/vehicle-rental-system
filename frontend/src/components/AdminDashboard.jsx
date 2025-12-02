@@ -16,11 +16,11 @@ export default function AdminDashboard() {
         year: "",
         description: "",
         location: "",
-        type: "",
+        type: ""
     });
     const [saving, setSaving] = useState(false);
 
-    // Fetch all data
+    // ========================= FETCH DATA =========================
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -31,12 +31,14 @@ export default function AdminDashboard() {
 
                 setVehicles(vehicleRes.data?.data || []);
                 setBookings(bookingRes.data?.data || []);
+
             } catch (error) {
                 console.error("Dashboard Fetch Error:", error);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchData();
     }, []);
 
@@ -48,10 +50,9 @@ export default function AdminDashboard() {
         );
     }
 
-    // DELETE VEHICLE ===================================
+    // ========================= DELETE VEHICLE =========================
     const deleteVehicle = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this vehicle?"))
-            return;
+        if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
 
         try {
             await API.delete(`/vehicles/${id}`);
@@ -65,7 +66,7 @@ export default function AdminDashboard() {
         }
     };
 
-    // OPEN MODAL =======================================
+    // ========================= MODAL OPEN / CLOSE =========================
     const openModal = (vehicle) => {
         setSelectedVehicle(vehicle);
         setFormData({
@@ -77,7 +78,6 @@ export default function AdminDashboard() {
         });
     };
 
-    // CLOSE MODAL ======================================
     const closeModal = () => {
         setSelectedVehicle(null);
         setFormData({
@@ -85,11 +85,11 @@ export default function AdminDashboard() {
             year: "",
             description: "",
             location: "",
-            type: "",
+            type: ""
         });
     };
 
-    // UPDATE VEHICLE ===================================
+    // ========================= UPDATE VEHICLE =========================
     const handleUpdate = async () => {
         try {
             setSaving(true);
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
         }
     };
 
-    // PAGINATION ===========================
+    // ========================= PAGINATION =========================
     const paginatedBookings = bookings.slice(
         (bookingPage - 1) * ITEMS_PER_PAGE,
         bookingPage * ITEMS_PER_PAGE
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
     );
     const totalVehiclePages = Math.ceil(vehicles.length / ITEMS_PER_PAGE);
 
-    // STATS ===========================================
+    // ========================= DASHBOARD STATS =========================
     const totalRevenue = bookings.reduce((sum, b) => {
         const start = new Date(b.startDate);
         const end = new Date(b.endDate);
@@ -171,7 +171,93 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* ================== VEHICLES SECTION ================== */}
+            {/* ================== BOOKINGS TABLE ================== */}
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-10 overflow-x-auto">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">Recent Bookings</h3>
+
+                {bookings.length === 0 ? (
+                    <p className="text-center text-gray-500 py-4">No bookings available.</p>
+                ) : (
+                    <>
+                        <table className="w-full text-sm border-collapse">
+                            <thead className="bg-gray-100 text-gray-700">
+                                <tr>
+                                    <th className="p-3 text-left">User</th>
+                                    <th className="p-3 text-left">Vehicle</th>
+                                    <th className="p-3 text-left">Start</th>
+                                    <th className="p-3 text-left">End</th>
+                                    <th className="p-3 text-left">Amount</th>
+                                    <th className="p-3 text-left">Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {paginatedBookings.map((b) => (
+                                    <tr key={b._id} className="border-b hover:bg-gray-50">
+                                        <td className="p-3">{b?.user?.name || "Unknown"}</td>
+                                        <td className="p-3">
+                                            {b?.vehicle?.make} {b?.vehicle?.model}
+                                        </td>
+                                        <td className="p-3">
+                                            {new Date(b.startDate).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-3">
+                                            {new Date(b.endDate).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-3 font-medium">
+                                            ₹{b.amount ?? b.vehicle?.pricePerDay ?? 0}
+                                        </td>
+                                        <td
+                                            className={`p-3 font-semibold ${
+                                                b.status === "booked"
+                                                    ? "text-green-600"
+                                                    : "text-red-600"
+                                            }`}
+                                        >
+                                            {b.status === "booked" ? "Paid" : "Cancelled"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* BOOKINGS PAGINATION */}
+                        <div className="flex justify-center mt-6 gap-2">
+                            <button
+                                disabled={bookingPage === 1}
+                                onClick={() => setBookingPage(bookingPage - 1)}
+                                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-40"
+                            >
+                                Prev
+                            </button>
+
+                            {Array.from({ length: totalBookingPages }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setBookingPage(i + 1)}
+                                    className={`px-3 py-1 rounded ${
+                                        bookingPage === i + 1
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-gray-200"
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+
+                            <button
+                                disabled={bookingPage === totalBookingPages}
+                                onClick={() => setBookingPage(bookingPage + 1)}
+                                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-40"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* ================== VEHICLES LIST ================== */}
             <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">Vehicles</h3>
 
@@ -197,7 +283,7 @@ export default function AdminDashboard() {
                                             onClick={() => openModal(v)}
                                             className="bg-yellow-500 text-white px-4 py-1.5 rounded-md hover:bg-yellow-600"
                                         >
-                                            Manage
+                                            Update
                                         </button>
 
                                         <button
@@ -258,9 +344,7 @@ export default function AdminDashboard() {
                             ×
                         </button>
 
-                        <h3 className="text-xl font-bold mb-4 text-center">
-                            Manage Vehicle
-                        </h3>
+                        <h3 className="text-xl font-bold mb-4 text-center">Manage Vehicle</h3>
 
                         <div className="space-y-3">
                             <div>
