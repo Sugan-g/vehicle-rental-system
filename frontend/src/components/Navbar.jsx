@@ -38,7 +38,7 @@ export default function Navbar() {
             <>
               <Link to="/my-bookings">My Bookings</Link>
               <Link to="/rental-history">Rental History</Link>
-               <Link to="/my-reviews">My Reviews</Link> 
+              <Link to="/my-reviews">My Reviews</Link>
             </>
           )}
 
@@ -47,6 +47,10 @@ export default function Navbar() {
             <>
               <Link to="/admin" className="text-yellow-400 font-semibold">
                 Admin Dashboard
+              </Link>
+
+              <Link to="/manage-bookings" className="text-yellow-400 font-semibold">
+                Manage Bookings
               </Link>
 
               <Link to="/add-vehicle" className="text-green-400 font-semibold">
@@ -89,13 +93,13 @@ export default function Navbar() {
                 My Bookings
               </Link>
 
-              <Link
-                to="/rental-history"
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>
                 Rental History
               </Link>
-              <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>My Reviews</Link>
+
+              <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>
+                My Reviews
+              </Link>
             </>
           )}
 
@@ -108,6 +112,14 @@ export default function Navbar() {
                 className="text-yellow-400 font-semibold"
               >
                 Admin Dashboard
+              </Link>
+
+              <Link
+                to="/manage-bookings"
+                onClick={() => setMenuOpen(false)}
+                className="text-yellow-400 font-semibold"
+              >
+                Manage Bookings
               </Link>
 
               <Link
