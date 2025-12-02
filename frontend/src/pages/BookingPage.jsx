@@ -11,7 +11,7 @@ export default function BookingPage() {
   const [vehicle, setVehicle] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [hasReviewed, setHasReviewed] = useState(false);
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState("");
   const [comment, setComment] = useState("");
   const [bookingDetails, setBookingDetails] = useState({
     startDate: "",
@@ -25,9 +25,14 @@ export default function BookingPage() {
     const fetchVehicle = async () => {
       try {
         const res = await API.get(`/vehicles/${vehicleId}`);
-        setVehicle(res.data.data); // ✅ FIXED — unwraps your backend response
+
+        // FIX: Support both formats
+        const vehicleData =
+          res.data?.data || res.data?.vehicle || res.data;
+
+        setVehicle(vehicleData);
       } catch (err) {
-        console.error("Error fetching vehicle:", err);
+        console.error("Vehicle fetch error:", err);
       }
     };
     fetchVehicle();
@@ -40,31 +45,38 @@ export default function BookingPage() {
     const loadReviews = async () => {
       try {
         const res = await API.get(`/reviews/vehicle/${vehicleId}`);
-        setReviews(res.data.data);
+
+        // FIX: Support both formats
+        const reviewList =
+          res.data?.data || res.data?.reviews || res.data || [];
+
+        setReviews(reviewList);
       } catch (err) {
-        console.error("Error fetching reviews:", err);
+        console.error("Reviews fetch error:", err);
       }
     };
     loadReviews();
   }, [vehicleId]);
 
   // ------------------------------
-  // CHECK IF USER ALREADY REVIEWED
+  // CHECK REVIEW EXISTS
   // ------------------------------
   useEffect(() => {
     const checkUserReview = async () => {
       try {
         const res = await API.get(`/reviews/check/${vehicleId}`);
-        setHasReviewed(res.data.hasReviewed);
+
+        setHasReviewed(res.data?.hasReviewed || false);
       } catch (err) {
         console.error("Error checking review:", err);
       }
     };
+
     if (isLoggedIn) checkUserReview();
   }, [vehicleId, isLoggedIn]);
 
   // ------------------------------
-  // HANDLE BOOKING
+  // BOOKING
   // ------------------------------
   const handleBooking = async () => {
     if (!isLoggedIn) {
@@ -73,7 +85,7 @@ export default function BookingPage() {
     }
 
     try {
-      const res = await API.post("/bookings", {
+      await API.post("/bookings", {
         vehicleId,
         startDate: bookingDetails.startDate,
         endDate: bookingDetails.endDate,
@@ -82,17 +94,17 @@ export default function BookingPage() {
       alert("Booking successful!");
       navigate("/profile");
     } catch (err) {
+      console.error("Booking failed:", err);
       alert("Booking failed");
-      console.error(err);
     }
   };
 
   // ------------------------------
-  // HANDLE REVIEW SUBMIT
+  // SUBMIT REVIEW
   // ------------------------------
   const submitReview = async () => {
-    if (!rating || comment.trim() === "") {
-      alert("Rating and comment required");
+    if (!rating || !comment.trim()) {
+      alert("Rating and comment are required");
       return;
     }
 
@@ -103,17 +115,14 @@ export default function BookingPage() {
         comment,
       });
 
-      alert("Review submitted!");
+      alert("Review added");
 
-      // Refresh reviews
       const res = await API.get(`/reviews/vehicle/${vehicleId}`);
-      setReviews(res.data.data);
+      setReviews(res.data?.data || res.data || []);
 
       setHasReviewed(true);
-      setRating(0);
-      setComment("");
     } catch (err) {
-      console.error("Error submitting review:", err);
+      console.error("Review error:", err);
     }
   };
 
@@ -123,16 +132,14 @@ export default function BookingPage() {
     <div className="booking-page">
       <h1>{vehicle.make} {vehicle.model}</h1>
 
-      {/* Vehicle Image */}
       <img
         src={vehicle.images?.[0]}
-        alt={vehicle.model}
         style={{ width: "300px", borderRadius: "8px" }}
       />
 
-      <p><strong>Price / Day:</strong> ₹{vehicle.pricePerDay}</p>
+      <p><strong>Price/Day:</strong> ₹{vehicle.pricePerDay}</p>
 
-      {/* Booking Section */}
+      {/* Booking */}
       <div>
         <h3>Book This Vehicle</h3>
 
@@ -155,34 +162,29 @@ export default function BookingPage() {
         <button onClick={handleBooking}>Book Now</button>
       </div>
 
-      {/* Review Section */}
+      {/* Reviews */}
       <div>
         <h3>Reviews</h3>
 
         {reviews.length === 0 && <p>No reviews yet.</p>}
 
         {reviews.map((r) => (
-          <div key={r._id} style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-            <strong>⭐ {r.rating}</strong>
+          <div key={r._id}>
+            <p>⭐ {r.rating}</p>
             <p>{r.comment}</p>
           </div>
         ))}
 
         {!hasReviewed && isLoggedIn && (
           <div>
-            <h4>Write a Review</h4>
-
             <select value={rating} onChange={(e) => setRating(e.target.value)}>
               <option value="">Select Rating</option>
-              <option value="1">1 Star</option>
-              <option value="2">2 Stars</option>
-              <option value="3">3 Stars</option>
-              <option value="4">4 Stars</option>
-              <option value="5">5 Stars</option>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>{n} Star</option>
+              ))}
             </select>
 
             <textarea
-              placeholder="Write your review"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             ></textarea>
