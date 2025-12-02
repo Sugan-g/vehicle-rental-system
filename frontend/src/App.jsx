@@ -17,6 +17,7 @@ import PaymentCancel from "./pages/PaymentCancel.jsx";
 import VehicleDetails from "./pages/VehicleDetails.jsx"; // Ensure this is imported
 import AddVehiclePage from "./pages/AddVehiclePage.jsx"; // Ensure this is imported
 import MyReviewsPage from "./pages/MyReviewsPage";
+import ManageBookingsPage from "./pages/ManageBookingsPage.jsx";
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
             element={
               <AdminRoute>
                 <AddVehiclePage />
+              </AdminRoute>
+            }
+          />
+           <Route
+            path="/manage-bookings"
+            element={
+              <AdminRoute>
+                <ManageBookingsPage />
               </AdminRoute>
             }
           />
