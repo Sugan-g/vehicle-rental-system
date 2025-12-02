@@ -26,7 +26,6 @@ export default function BookingPage() {
       try {
         const res = await API.get(`/vehicles/${vehicleId}`);
 
-        // Support multiple API formats
         const vehicleData =
           res.data?.data || res.data?.vehicle || res.data;
 
@@ -126,33 +125,34 @@ export default function BookingPage() {
   if (!vehicle) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto px-5 py-10">
 
       {/* Top Section */}
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-10 items-start bg-white shadow-lg p-6 rounded-2xl">
 
         {/* Vehicle Image */}
         <img
           src={vehicle.images?.[0]}
           alt={vehicle.model}
-          className="w-full md:w-96 rounded-xl shadow"
+          className="w-full md:w-96 rounded-xl shadow-md object-cover"
         />
 
         {/* Vehicle Info */}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">
             {vehicle.make} {vehicle.model}
           </h1>
 
-          <p className="text-lg mb-4">
-            <span className="font-semibold">Price/Day:</span> ₹{vehicle.pricePerDay}
+          <p className="text-lg mb-6">
+            <span className="font-semibold">Price/Day:</span>{" "}
+            <span className="text-blue-600 font-bold">₹{vehicle.pricePerDay}</span>
           </p>
 
           {/* Booking Form */}
-          <div className="border rounded-xl p-5 shadow-sm bg-white">
-            <h3 className="font-semibold text-xl">Book This Vehicle</h3>
+          <div className="border rounded-xl p-6 shadow-md bg-gray-50">
+            <h3 className="font-semibold text-xl mb-4">Book This Vehicle</h3>
 
-            <div className="flex flex-col md:flex-row gap-4 mt-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <input
                 type="date"
                 value={bookingDetails.startDate}
@@ -162,7 +162,7 @@ export default function BookingPage() {
                     startDate: e.target.value,
                   })
                 }
-                className="border p-2 rounded-lg w-full"
+                className="border p-3 rounded-lg w-full"
               />
 
               <input
@@ -174,13 +174,13 @@ export default function BookingPage() {
                     endDate: e.target.value,
                   })
                 }
-                className="border p-2 rounded-lg w-full"
+                className="border p-3 rounded-lg w-full"
               />
             </div>
 
             <button
               onClick={handleBooking}
-              className="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="mt-5 w-full md:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition text-lg font-medium"
             >
               Book Now
             </button>
@@ -189,32 +189,32 @@ export default function BookingPage() {
       </div>
 
       {/* Reviews */}
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+      <div className="mt-14">
+        <h2 className="text-3xl font-bold mb-6">Reviews</h2>
 
         {reviews.length === 0 && (
-          <p className="text-gray-600">No reviews yet.</p>
+          <p className="text-gray-600 text-lg">No reviews yet.</p>
         )}
 
         {/* Review List */}
-        <div className="space-y-4 mt-4">
+        <div className="space-y-5">
           {reviews.map((r) => (
-            <div key={r._id} className="border-b pb-3">
-              <p className="text-xl font-semibold">⭐ {r.rating}</p>
-              <p className="text-gray-700 mt-1">{r.comment}</p>
+            <div key={r._id} className="border rounded-xl p-5 bg-white shadow-sm">
+              <p className="text-2xl font-semibold text-yellow-600">⭐ {r.rating}</p>
+              <p className="text-gray-700 mt-2 text-lg">{r.comment}</p>
             </div>
           ))}
         </div>
 
         {/* Add Review */}
         {!hasReviewed && isLoggedIn && (
-          <div className="mt-6 p-5 border rounded-xl shadow-sm bg-white">
-            <h3 className="font-semibold text-xl mb-3">Write a Review</h3>
+          <div className="mt-10 p-6 border rounded-2xl shadow-md bg-white">
+            <h3 className="font-semibold text-2xl mb-5">Write a Review</h3>
 
             <select
               value={rating}
               onChange={(e) => setRating(e.target.value)}
-              className="border p-2 rounded-lg w-full mb-3"
+              className="border p-3 rounded-lg w-full mb-4"
             >
               <option value="">Select Rating</option>
               {[1, 2, 3, 4, 5].map((n) => (
@@ -226,12 +226,12 @@ export default function BookingPage() {
               placeholder="Write your review..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="border p-3 rounded-lg w-full min-h-[90px] mb-3"
+              className="border p-4 rounded-lg w-full min-h-[120px] mb-4"
             ></textarea>
 
             <button
               onClick={submitReview}
-              className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition text-lg font-medium"
             >
               Submit Review
             </button>
