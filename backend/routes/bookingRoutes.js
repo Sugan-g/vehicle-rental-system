@@ -8,6 +8,7 @@ import {
     getAllBookings,
 } from "../controllers/bookingController.js";
 import { protect, admin } from "../middlewares/authMiddleware.js";
+import Booking from "../models/Booking.js";
 
 const router = express.Router();
 
