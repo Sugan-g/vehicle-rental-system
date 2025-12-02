@@ -65,7 +65,7 @@ export default function MyReviewsPage() {
               className="bg-white p-4 rounded-xl shadow border hover:shadow-lg transition"
             >
               <h3 className="text-xl font-semibold text-gray-800">
-                {r.vehicle?.make} {r.vehicle?.model} ({r.vehicle?.year})
+                {r.vehicle?.model} {r.vehicle?.make}  ({r.vehicle?.year})
               </h3>
 
               <p className="mt-1 text-sm text-gray-600">
