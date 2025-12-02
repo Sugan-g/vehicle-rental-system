@@ -144,8 +144,8 @@ export default function BookingPage() {
       console.error("Review error:", err.response?.data || err);
       alert(err.response?.data?.message || "Something went wrong");
     }
-  };
-
+  }; 
+ 
   if (!vehicle) return <p className="text-center mt-10">Loading...</p>;
 
   return (
