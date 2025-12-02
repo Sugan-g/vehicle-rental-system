@@ -96,7 +96,7 @@ export default function BookingPage() {
       alert(err.response?.data?.message || "Booking failed");
     }
   };
-
+ 
   // ------------------------------
   // SUBMIT REVIEW
   // ------------------------------
