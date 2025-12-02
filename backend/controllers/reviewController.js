@@ -1,9 +1,11 @@
 import Review from "../models/Review.js";
 
-// 🔹 Create a new review
+// 🔹 Create or update a review
 export const createReview = async (req, res) => {
     try {
-        const { vehicle, rating, comment } = req.body;
+        // Accept either vehicle or vehicleId from frontend
+        const vehicle = req.body.vehicle || req.body.vehicleId;
+        const { rating, comment } = req.body;
 
         if (!vehicle || !rating || !comment) {
             return res.status(400).json({ message: "All fields are required" });
@@ -27,7 +29,7 @@ export const createReview = async (req, res) => {
             });
         }
 
-        // Otherwise create new
+        // Otherwise create new review
         const review = await Review.create({
             user: req.user._id,
             vehicle,

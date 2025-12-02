@@ -100,51 +100,48 @@ export default function BookingPage() {
   // ------------------------------
   // SUBMIT REVIEW
   // ------------------------------
-  const submitReview = async () => {
-    if (!rating || !comment.trim()) {
-      alert("Rating and comment are required");
-      return;
-    }
+   const submitReview = async () => {
+  if (!rating || !comment.trim()) {
+    alert("Rating and comment are required");
+    return;
+  }
 
-    if (!vehicleId) {
-      alert("Vehicle ID is missing");
-      return;
-    }
+  if (!vehicleId) {
+    alert("Vehicle ID is missing");
+    return;
+  }
 
-    try {
-      console.log("Submitting review:", {
-        vehicleId,
+  try {
+    await API.post(
+      "/reviews",
+      {
+        vehicle: vehicleId, // ✅ match backend
         rating: Number(rating),
         comment,
-        token: localStorage.getItem("token"),
-      });
-
-      await API.post(
-        "/reviews",
-        {
-          vehicleId,
-          rating: Number(rating),
-          comment,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      }
+    );
 
-      alert("Review added");
+    alert("Review added successfully!");
 
-      const res = await API.get(`/reviews/vehicle/${vehicleId}`);
-      setReviews(res.data?.data || res.data || []);
-      setHasReviewed(true);
-      setRating("");
-      setComment("");
-    } catch (err) {
-      console.error("Review error:", err.response?.data || err);
-      alert(err.response?.data?.message || "Something went wrong");
-    }
-  }; 
+    // Refresh reviews
+    const res = await API.get(`/reviews/vehicle/${vehicleId}`);
+    setReviews(res.data?.data || res.data || []);
+    setHasReviewed(true);
+
+    // Reset form
+    setRating("");
+    setComment("");
+  } catch (err) {
+    console.error("Review error:", err.response?.data || err);
+    alert(err.response?.data?.message || "Something went wrong");
+  }
+};
+ 
  
   if (!vehicle) return <p className="text-center mt-10">Loading...</p>;
 
