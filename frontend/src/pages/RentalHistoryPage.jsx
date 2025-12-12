@@ -22,19 +22,19 @@ export default function RentalHistoryPage() {
     fetchBookings();
   }, []);
 
-  // FILTER HISTORY: Cancelled, Completed, Expired OR Paid bookings with endDate past today
+  // FILTER HISTORY: Cancelled, Expired, Completed (Paid or ended)
   const historyList = useMemo(() => {
     const today = new Date();
     return bookings.filter((b) => {
       const status = (b.status || "").toLowerCase();
-      const payment = (b.payment?.status || "").toLowerCase();
-      const endDate = new Date(b.endDate);
+      const paymentStatus = (b.payment?.status || b.paymentStatus || "").toLowerCase();
+      const endDate = b.endDate ? new Date(b.endDate) : today;
 
       return (
-        status === "completed" ||
         status === "cancelled" ||
         status === "expired" ||
-        (payment === "paid" && endDate < today)
+        status === "completed" ||
+        (paymentStatus === "paid" && endDate < today)
       );
     });
   }, [bookings]);
@@ -45,7 +45,10 @@ export default function RentalHistoryPage() {
       ...b,
       start: b.startDate ? new Date(b.startDate).toLocaleDateString() : "—",
       end: b.endDate ? new Date(b.endDate).toLocaleDateString() : "—",
-      status: (b.status || b.payment?.status || "unknown").toLowerCase(),
+      status:
+        (b.status || "").toLowerCase() === "completed" && (b.payment?.status || "").toLowerCase() === "paid"
+          ? "paid completed"
+          : (b.status || b.paymentStatus || "unknown").toLowerCase(),
       price: b?.vehicle?.pricePerDay ?? "0",
       title: `${b.vehicle?.make || ""} ${b.vehicle?.model || ""}`,
       location: b.vehicle?.location || "Not available",
@@ -54,6 +57,8 @@ export default function RentalHistoryPage() {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case "paid completed":
+        return "text-green-700 bg-green-100 border-green-300";
       case "completed":
         return "text-green-700 bg-green-100 border-green-300";
       case "cancelled":
@@ -71,6 +76,7 @@ export default function RentalHistoryPage() {
         Rental History
       </h2>
 
+      {/* SKELETON LOADING */}
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-pulse">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -79,10 +85,12 @@ export default function RentalHistoryPage() {
         </div>
       )}
 
+      {/* No History */}
       {!loading && optimizedBookings.length === 0 && (
         <p className="text-center text-gray-500">No rental history available</p>
       )}
 
+      {/* Display HISTORY */}
       {!loading && optimizedBookings.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {optimizedBookings.map((b) => (
@@ -90,7 +98,10 @@ export default function RentalHistoryPage() {
               key={b._id}
               className="bg-white p-5 shadow-md rounded-xl border hover:shadow-lg transition"
             >
-              <h3 className="text-lg font-semibold text-gray-900 truncate">{b.title}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                {b.title}
+              </h3>
+
               <p className="text-sm text-gray-700 mt-1">📍 {b.location}</p>
 
               <div className="mt-3 text-sm text-gray-700 space-y-1">
