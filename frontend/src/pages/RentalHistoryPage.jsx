@@ -22,9 +22,17 @@ export default function RentalHistoryPage() {
     fetchBookings();
   }, []);
 
-  //  PRE-COMPUTE FORMATTED BOOKING DATA (Faster UI)
+  // FILTER HISTORY ONLY (Completed, Cancelled, Expired)
+  const historyList = useMemo(() => {
+    return bookings.filter((b) => {
+      const status = (b.paymentStatus || b.status || "").toLowerCase();
+      return status === "cancelled" || status === "completed" || status === "expired";
+    });
+  }, [bookings]);
+
+  // PREPARE DISPLAY DATA
   const optimizedBookings = useMemo(() => {
-    return bookings.map((b) => ({
+    return historyList.map((b) => ({
       ...b,
       start: new Date(b.startDate).toLocaleDateString(),
       end: new Date(b.endDate).toLocaleDateString(),
@@ -33,16 +41,16 @@ export default function RentalHistoryPage() {
       title: `${b.vehicle?.make || ""} ${b.vehicle?.model || ""}`,
       location: b.vehicle?.location || "Not available",
     }));
-  }, [bookings]);
+  }, [historyList]);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "paid":
-        return "text-green-600 bg-green-50 border-green-200";
+      case "completed":
+        return "text-green-700 bg-green-100 border-green-300";
       case "cancelled":
-        return "text-red-600 bg-red-50 border-red-200";
-      case "pending":
-        return "text-orange-600 bg-orange-50 border-orange-200";
+        return "text-red-700 bg-red-100 border-red-300";
+      case "expired":
+        return "text-gray-700 bg-gray-100 border-gray-300";
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }
@@ -51,27 +59,24 @@ export default function RentalHistoryPage() {
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto mt-18">
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
-        My Rentals
+        Rental History
       </h2>
 
-      {/* SKELETON LOADING (Faster UX) */}
+      {/* SKELETON LOADING */}
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-pulse">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-gray-200 h-40 rounded-xl shadow-sm"
-            ></div>
+            <div key={i} className="bg-gray-200 h-40 rounded-xl shadow-sm"></div>
           ))}
         </div>
       )}
 
-      {/* No Data */}
+      {/* No History */}
       {!loading && optimizedBookings.length === 0 && (
         <p className="text-center text-gray-500">No rental history available</p>
       )}
 
-      {/* Display Data */}
+      {/* Display HISTORY ONLY */}
       {!loading && optimizedBookings.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {optimizedBookings.map((b) => (

@@ -4,9 +4,6 @@ import API from "../api/api";
 
 export default function BookingPage() {
   const [bookings, setBookings] = useState([]);
-  const [reviewInputs, setReviewInputs] = useState({});
-  const [reviews, setReviews] = useState({});
-  const [submitting, setSubmitting] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Pagination
@@ -19,6 +16,7 @@ export default function BookingPage() {
     return new Date(date).toLocaleDateString();
   };
 
+  // Fetch only ACTIVE bookings, filter out completed/cancelled
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -27,31 +25,18 @@ export default function BookingPage() {
       const items = res?.data?.data || [];
       const totalCount = res?.data?.total || 0;
 
-      // Normalize payment data
       const normalized = items.map((b) => ({
         ...b,
-        payment: {
-          status: b?.payment?.status || "pending",
-        },
+        payment: { status: b?.payment?.status || "pending" },
       }));
 
-      setBookings(normalized);
+      // 🚀 Only Active Bookings in My Bookings Page
+      const activeOnly = normalized.filter(
+        (b) => b.status !== "completed" && b.status !== "cancelled"
+      );
+
+      setBookings(activeOnly);
       setTotal(totalCount);
-
-      // Fetch User Reviews
-      const reviewRes = await API.get("/reviews/my");
-      const map = {};
-
-      (reviewRes?.data || []).forEach((r) => {
-        if (r?.vehicle?._id) {
-          map[r.vehicle._id] = {
-            rating: r.rating,
-            comment: r.comment,
-          };
-        }
-      });
-
-      setReviews(map);
     } catch (err) {
       setBookings([]);
       setTotal(0);
@@ -66,6 +51,7 @@ export default function BookingPage() {
 
   const handleCancel = async (id) => {
     if (!window.confirm("Cancel this booking?")) return;
+
     try {
       await API.put(`/bookings/${id}/cancel`);
       alert("Booking cancelled. Email sent!");
@@ -75,7 +61,6 @@ export default function BookingPage() {
     }
   };
 
-  // Detect Amount
   const extractAmount = (b) =>
     Number(
       b.totalAmount ||
@@ -107,59 +92,9 @@ export default function BookingPage() {
       }
 
       window.location.href = res.data.url;
-    } catch (err) {
+    } catch {
       alert("Payment failed");
     }
-  };
-
-  const handleStarClick = (vehicleId, value) => {
-    setReviewInputs((prev) => ({
-      ...prev,
-      [vehicleId]: { ...prev[vehicleId], rating: value },
-    }));
-  };
-
-  const handleCommentChange = (vehicleId, value) => {
-    setReviewInputs((prev) => ({
-      ...prev,
-      [vehicleId]: { ...prev[vehicleId], comment: value },
-    }));
-  };
-
-  const handleSubmitReview = async (booking) => {
-    const vId = booking.vehicle._id;
-
-    if (!reviewInputs[vId]?.rating) {
-      alert("Please select a rating");
-      return;
-    }
-
-    try {
-      setSubmitting(vId);
-
-      const res = await API.post("/reviews", {
-        vehicle: vId,
-        rating: reviewInputs[vId].rating,
-        comment: reviewInputs[vId].comment,
-      });
-
-      setReviews((prev) => ({
-        ...prev,
-        [vId]: {
-          rating: res.data.rating,
-          comment: res.data.comment,
-        },
-      }));
-
-      setReviewInputs((prev) => ({
-        ...prev,
-        [vId]: { rating: 0, comment: "" },
-      }));
-    } catch {
-      alert("Error submitting review");
-    }
-
-    setSubmitting(null);
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -175,16 +110,15 @@ export default function BookingPage() {
       )}
 
       {!loading && bookings.length === 0 && (
-        <p className="text-center text-gray-600">No bookings found.</p>
+        <p className="text-center text-gray-600">
+          No active bookings found.
+        </p>
       )}
 
       {!loading &&
         bookings.map((b) => {
-          // 🚫 SKIP EMPTY VEHICLE BOOKINGS — FIX APPLIED
           if (!b.vehicle || !b.vehicle._id) return null;
 
-          const vehicleId = b.vehicle._id;
-          const existingReview = reviews[vehicleId];
           const isPaid = b.payment?.status === "paid";
 
           return (
@@ -192,36 +126,31 @@ export default function BookingPage() {
               key={b._id}
               className="border p-4 rounded-xl mb-5 shadow bg-white"
             >
+              {/* Top Row */}
               <div className="flex justify-between">
                 <div>
                   <p className="font-semibold text-lg">
-                    {b.vehicle?.make} {b.vehicle?.model}
+                    {b.vehicle.make} {b.vehicle.model}
                   </p>
                   <p className="text-sm text-gray-600">
-                    📍 {b.vehicle?.location}
+                    📍 {b.vehicle.location}
                   </p>
                 </div>
 
-                <p
-                  className={`font-semibold ${
-                    b.status === "cancelled"
-                      ? "text-red-600"
-                      : "text-green-600"
-                  }`}
-                >
-                  {b.status}
-                </p>
+                <span className="px-3 py-1 rounded-lg text-white bg-blue-600 text-sm">
+                  Active
+                </span>
               </div>
 
               {/* Dates */}
               <div className="mt-3 text-sm text-gray-700 border-t pt-3 space-y-1">
                 <p>
-                  <span className="font-semibold">Start Date:</span>{" "}
+                  <span className="font-semibold">Start:</span>{" "}
                   {formatDate(b.startDate)}
                 </p>
 
                 <p>
-                  <span className="font-semibold">End Date:</span>{" "}
+                  <span className="font-semibold">End:</span>{" "}
                   {formatDate(b.endDate)}
                 </p>
 
@@ -238,94 +167,39 @@ export default function BookingPage() {
               </div>
 
               {/* Action Buttons */}
-              {b.status !== "cancelled" && (
-                <div className="flex gap-3 mt-4">
-                  <Link
-                    to={`/edit-booking/${b._id}`}
-                    state={{ booking: b }}
-                    className={`px-4 py-2 rounded-lg text-white ${
-                      isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
-                    }`}
-                    onClick={(e) => isPaid && e.preventDefault()}
-                  >
-                    Edit
-                  </Link>
+              <div className="flex gap-3 mt-4">
+                {/* Edit Button */}
+                <Link
+                  to={`/edit-booking/${b._id}`}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+                  }`}
+                  onClick={(e) => isPaid && e.preventDefault()}
+                >
+                  Edit
+                </Link>
 
+                {/* Cancel Button */}
+                <button
+                  onClick={() => !isPaid && handleCancel(b._id)}
+                  disabled={isPaid}
+                  className={`px-4 py-2 rounded-lg text-white ${
+                    isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"
+                  }`}
+                >
+                  Cancel
+                </button>
+
+                {/* Pay Now */}
+                {!isPaid && (
                   <button
-                    onClick={() => !isPaid && handleCancel(b._id)}
-                    disabled={isPaid}
-                    className={`px-4 py-2 rounded-lg text-white ${
-                      isPaid ? "bg-gray-400 cursor-not-allowed" : "bg-red-600"
-                    }`}
+                    onClick={() => handlePayNow(b)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg"
                   >
-                    Cancel
+                    Pay Now
                   </button>
-
-                  {!isPaid && (
-                    <button
-                      onClick={() => handlePayNow(b)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                    >
-                      Pay Now
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Review Section */}
-              {b.status === "completed" && (
-                <div className="mt-4 border-t pt-3">
-                  {existingReview ? (
-                    <div>
-                      <p className="font-semibold">Your Review</p>
-                      <p className="text-yellow-500 text-xl">
-                        {"★".repeat(existingReview.rating)}
-                      </p>
-                      <p className="text-gray-700">{existingReview.comment}</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="font-semibold mb-1">Leave a Review</p>
-
-                      <div className="flex gap-1 mb-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span
-                            key={star}
-                            onClick={() => handleStarClick(vehicleId, star)}
-                            className={`cursor-pointer text-2xl ${
-                              reviewInputs[vehicleId]?.rating >= star
-                                ? "text-yellow-500"
-                                : "text-gray-400"
-                            }`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-
-                      <textarea
-                        rows="2"
-                        className="border w-full p-2 rounded"
-                        placeholder="Write your review"
-                        value={reviewInputs[vehicleId]?.comment || ""}
-                        onChange={(e) =>
-                          handleCommentChange(vehicleId, e.target.value)
-                        }
-                      ></textarea>
-
-                      <button
-                        onClick={() => handleSubmitReview(b)}
-                        disabled={submitting === vehicleId}
-                        className="bg-green-600 text-white mt-2 px-4 py-2 rounded"
-                      >
-                        {submitting === vehicleId
-                          ? "Submitting..."
-                          : "Submit Review"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })}
@@ -346,7 +220,9 @@ export default function BookingPage() {
               key={i}
               onClick={() => setPage(i + 1)}
               className={`px-3 py-1 rounded ${
-                page === i + 1 ? "bg-blue-600 text-white" : "bg-gray-200"
+                page === i + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200"
               }`}
             >
               {i + 1}
