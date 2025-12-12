@@ -23,7 +23,6 @@ export default function BookingPage() {
 
       const res = await API.get(`/bookings/my?page=${page}&limit=${limit}`);
       const items = res?.data?.data || [];
-      const totalCount = res?.data?.total || 0;
 
       const normalized = items.map((b) => ({
         ...b,
@@ -36,7 +35,7 @@ export default function BookingPage() {
       );
 
       setBookings(activeOnly);
-      setTotal(totalCount);
+      setTotal(activeOnly.length); // ✅ pagination matches active bookings
     } catch (err) {
       setBookings([]);
       setTotal(0);
@@ -110,9 +109,7 @@ export default function BookingPage() {
       )}
 
       {!loading && bookings.length === 0 && (
-        <p className="text-center text-gray-600">
-          No active bookings found.
-        </p>
+        <p className="text-center text-gray-600">No active bookings found.</p>
       )}
 
       {!loading &&
@@ -132,14 +129,8 @@ export default function BookingPage() {
                   <p className="font-semibold text-lg">
                     {b.vehicle.make} {b.vehicle.model}
                   </p>
-                  <p className="text-sm text-gray-600">
-                    📍 {b.vehicle.location}
-                  </p>
+                  <p className="text-sm text-gray-600">📍 {b.vehicle.location}</p>
                 </div>
-
-                <span className="px-3 py-1 rounded-lg text-white bg-blue-600 text-sm">
-                  Active
-                </span>
               </div>
 
               {/* Dates */}
@@ -159,16 +150,13 @@ export default function BookingPage() {
                   {isPaid ? (
                     <span className="text-green-600 font-semibold">Paid</span>
                   ) : (
-                    <span className="text-orange-600 font-semibold">
-                      Pending
-                    </span>
+                    <span className="text-orange-600 font-semibold">Pending</span>
                   )}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 mt-4">
-                {/* Edit Button */}
                 <Link
                   to={`/edit-booking/${b._id}`}
                   className={`px-4 py-2 rounded-lg text-white ${
@@ -179,7 +167,6 @@ export default function BookingPage() {
                   Edit
                 </Link>
 
-                {/* Cancel Button */}
                 <button
                   onClick={() => !isPaid && handleCancel(b._id)}
                   disabled={isPaid}
@@ -190,7 +177,6 @@ export default function BookingPage() {
                   Cancel
                 </button>
 
-                {/* Pay Now */}
                 {!isPaid && (
                   <button
                     onClick={() => handlePayNow(b)}
@@ -220,9 +206,7 @@ export default function BookingPage() {
               key={i}
               onClick={() => setPage(i + 1)}
               className={`px-3 py-1 rounded ${
-                page === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
+                page === i + 1 ? "bg-blue-600 text-white" : "bg-gray-200"
               }`}
             >
               {i + 1}
