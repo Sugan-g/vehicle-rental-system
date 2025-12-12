@@ -27,9 +27,18 @@ export default function BookingPage() {
       const items = res?.data?.data || [];
       const totalCount = res?.data?.total || 0;
 
-      setBookings(items);
+      // ⛔ FIX: Always include payment.status safely
+      const normalized = items.map((b) => ({
+        ...b,
+        payment: {
+          status: b?.payment?.status || "pending",
+        },
+      }));
+
+      setBookings(normalized);
       setTotal(totalCount);
 
+      // Fetch user reviews
       const reviewRes = await API.get("/reviews/my");
       const map = {};
 
@@ -66,16 +75,21 @@ export default function BookingPage() {
     }
   };
 
+  // FINAL FIX → Correct amount detection
+  const extractAmount = (b) =>
+    Number(
+      b.totalAmount ||
+        b.amount ||
+        b.finalAmount ||
+        b.total ||
+        b.price ||
+        b.pricePerDay ||
+        0
+    );
+
   const handlePayNow = async (booking) => {
     try {
-      const amount =
-        booking.totalAmount ||
-        booking.amount ||
-        booking.total ||
-        booking.finalAmount ||
-        booking.price ||
-        booking.pricePerDay ||
-        0;
+      const amount = extractAmount(booking);
 
       if (!amount || !booking._id) {
         alert("Missing amount or booking ID");
@@ -84,7 +98,7 @@ export default function BookingPage() {
 
       const res = await API.post("/payments/create-checkout-session", {
         bookingId: booking._id,
-        amount: Number(amount),
+        amount,
       });
 
       if (!res.data.url) {
@@ -168,7 +182,7 @@ export default function BookingPage() {
         bookings.map((b) => {
           const vehicleId = b.vehicle?._id;
           const existingReview = reviews[vehicleId];
-          const isPaid = b?.payment?.status === "paid";
+          const isPaid = b.payment?.status === "paid";
 
           return (
             <div
@@ -178,9 +192,11 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <div>
                   <p className="font-semibold text-lg">
-                     {b.vehicle?.model} {b.vehicle?.make}
+                    {b.vehicle?.make} {b.vehicle?.model}
                   </p>
-                  <p className="text-sm text-gray-600">📍 {b.vehicle?.location}</p>
+                  <p className="text-sm text-gray-600">
+                    📍 {b.vehicle?.location}
+                  </p>
                 </div>
 
                 <p
@@ -322,7 +338,7 @@ export default function BookingPage() {
             Prev
           </button>
 
-          {[...Array(totalPages)].map((_, i) => (
+          {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => setPage(i + 1)}
