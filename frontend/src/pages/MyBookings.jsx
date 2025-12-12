@@ -27,7 +27,7 @@ export default function BookingPage() {
       const items = res?.data?.data || [];
       const totalCount = res?.data?.total || 0;
 
-      // ⛔ FIX: Always include payment.status safely
+      // Normalize payment data
       const normalized = items.map((b) => ({
         ...b,
         payment: {
@@ -38,7 +38,7 @@ export default function BookingPage() {
       setBookings(normalized);
       setTotal(totalCount);
 
-      // Fetch user reviews
+      // Fetch User Reviews
       const reviewRes = await API.get("/reviews/my");
       const map = {};
 
@@ -75,7 +75,7 @@ export default function BookingPage() {
     }
   };
 
-  // FINAL FIX → Correct amount detection
+  // Detect Amount
   const extractAmount = (b) =>
     Number(
       b.totalAmount ||
@@ -180,7 +180,10 @@ export default function BookingPage() {
 
       {!loading &&
         bookings.map((b) => {
-          const vehicleId = b.vehicle?._id;
+          // 🚫 SKIP EMPTY VEHICLE BOOKINGS — FIX APPLIED
+          if (!b.vehicle || !b.vehicle._id) return null;
+
+          const vehicleId = b.vehicle._id;
           const existingReview = reviews[vehicleId];
           const isPaid = b.payment?.status === "paid";
 
@@ -210,7 +213,7 @@ export default function BookingPage() {
                 </p>
               </div>
 
-              {/* Start & End Date */}
+              {/* Dates */}
               <div className="mt-3 text-sm text-gray-700 border-t pt-3 space-y-1">
                 <p>
                   <span className="font-semibold">Start Date:</span>{" "}
@@ -234,7 +237,7 @@ export default function BookingPage() {
                 </p>
               </div>
 
-              {/* Action buttons */}
+              {/* Action Buttons */}
               {b.status !== "cancelled" && (
                 <div className="flex gap-3 mt-4">
                   <Link
