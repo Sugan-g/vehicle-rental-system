@@ -77,7 +77,7 @@ export default function RentalHistoryPage() {
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto mt-18">
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
-        Rental History
+        Past Rental
       </h2>
 
       {/* Loading Skeleton */}

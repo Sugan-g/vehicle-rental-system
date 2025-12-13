@@ -29,7 +29,7 @@ export default function BookingPage() {
         payment: { status: b?.payment?.status || "pending" },
       }));
 
-      // 🚀 Only Active Bookings in My Bookings Page
+      // Only Active Bookings in My Bookings Page
       const activeOnly = normalized.filter(
         (b) => b.status !== "completed" && b.status !== "cancelled"
       );
@@ -101,7 +101,7 @@ export default function BookingPage() {
   return (
     <div className="px-4 pt-24 pb-6 max-w-2xl mx-auto md:pt-28">
       <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-        My Bookings
+        Active Rentals
       </h1>
 
       {loading && (
