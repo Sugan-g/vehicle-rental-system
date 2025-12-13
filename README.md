@@ -218,3 +218,93 @@ Response:
 
 Register-POST-http://localhost:5000/api/auth/register -- Postman
 Login-POST-http://localhost:5000/api/auth/login -- Postman
+
+User Roles & Access Levels
+
+This application supports two user roles with clearly defined responsibilities.
+
+🔹 User
+
+Can register and log in
+
+Browse available vehicles
+
+Book vehicles for selected dates
+
+Make payments using Razorpay
+
+View Active Rentals (paid and pending bookings)
+
+View Rental History (paid or cancelled bookings)
+
+Edit or cancel their own bookings
+
+Add reviews for vehicles after booking
+
+🔹 Admin
+
+Has full access to the system
+
+Can manage vehicles (add, update, delete)
+
+Can view all user bookings
+
+Can manage users and monitor booking activity
+
+Does not create bookings (booking is user-driven)
+
+⚠️ Note: Only users are allowed to book vehicles. Admin access is limited to management and monitoring purposes.
+
+🚗 Rental Flow & Booking Status Logic
+
+The rental system follows a simple and clear booking lifecycle:
+
+🟢 Active Rentals
+
+A booking appears under Active Rentals when:
+
+The booking is created and payment is pending, or
+
+The booking is paid and has not been cancelled
+
+Users can:
+
+Edit booking dates
+
+Cancel the booking
+
+Complete payment if pending
+
+📜 Rental History
+
+A booking moves to Rental History when:
+
+The booking is cancelled, or
+
+The booking payment is successfully completed
+
+This separation ensures a clean distinction between ongoing and past rentals.
+
+💳 Payment Handling
+
+Payments are handled using Razorpay
+
+Payment details are stored in a separate Payment collection
+
+Each payment is linked to a booking using bookingId
+
+Booking history is determined using:
+
+booking.status === "cancelled" OR
+
+payment.status === "paid"
+
+✅ Role-Based Design Clarification
+
+The system is designed with role-based access control
+
+Booking functionality is intentionally restricted to users
+
+Admin users focus on system administration and data management
+
+This design ensures clarity, security, and real-world usability
