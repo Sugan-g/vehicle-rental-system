@@ -32,6 +32,18 @@ export const createBooking = async (req, res) => {
     try {
         const { vehicleId, startDate, endDate } = req.body;
 
+        //  ADD THIS BLOCK (PAST DATE RESTRICTION)
+        const start = new Date(startDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (start < today) {
+            return res.status(400).json({
+                message: "Cannot book for past dates"
+            });
+        }
+        // END ADD
+
         const vehicle = await Vehicle.findById(vehicleId);
         if (!vehicle)
             return res.status(404).json({ message: "Vehicle not found" });
@@ -63,10 +75,8 @@ export const createBooking = async (req, res) => {
             totalAmount,
         });
 
-        // Respond immediately
         res.json({ message: "Booked Successfully! Email will arrive shortly.", booking });
 
-        // Send email in background (non-blocking)
         sendEmail(
             req.user.email,
             "Booking Confirmed",
@@ -77,6 +87,7 @@ export const createBooking = async (req, res) => {
         res.status(500).json({ message: "Booking failed", error: error.message });
     }
 };
+
 
 // =============== Get My Bookings (with Payment Join) ====================
 export const getMyBookings = async (req, res) => {
