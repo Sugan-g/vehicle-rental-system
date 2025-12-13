@@ -75,7 +75,6 @@ export default function RegisterPage() {
             className="w-full border border-gray-300 focus:border-blue-500 p-3 rounded-lg"
           >
             <option value="user">User</option>
-            <option value="owner">Owner</option>
             <option value="admin">Admin</option>
           </select>
 
