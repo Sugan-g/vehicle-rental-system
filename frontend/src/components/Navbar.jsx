@@ -37,8 +37,8 @@ export default function Navbar() {
           {/* User-only */}
           {isLoggedIn && role === "user" && (
             <>
-              <Link to="/my-bookings">My Bookings</Link>
-              <Link to="/rental-history">Rental History</Link>
+              <Link to="/my-bookings">Active Rentals</Link>
+              <Link to="/rental-history">Past Rentals</Link>
               <Link to="/my-reviews">My Reviews</Link>
             </>
           )}
@@ -82,8 +82,8 @@ export default function Navbar() {
           {/* User-only */}
           {isLoggedIn && role === "user" && (
             <>
-              <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>My Bookings</Link>
-              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>Rental History</Link>
+              <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>Active Rentals</Link>
+              <Link to="/rental-history" onClick={() => setMenuOpen(false)}>Past Rentals</Link>
               <Link to="/my-reviews" onClick={() => setMenuOpen(false)}>My Reviews</Link>
             </>
           )}
