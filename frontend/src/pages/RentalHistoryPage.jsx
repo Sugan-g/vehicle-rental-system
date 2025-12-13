@@ -95,7 +95,7 @@ export default function RentalHistoryPage() {
       {/* No History */}
       {!loading && optimizedBookings.length === 0 && (
         <p className="text-center text-gray-500">
-          No rental history available
+          No rental  available
         </p>
       )}
 
