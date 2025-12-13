@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import API from "../api/api.js";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +21,10 @@ export default function MyReviewsPage() {
     const fetchReviews = async () => {
       try {
         const res = await API.get("/reviews/my");
-        setReviews(res.data || []);
+        setReviews(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.error("Error fetching reviews:", error);
+        setReviews([]);
       } finally {
         setLoading(false);
       }
@@ -34,6 +35,13 @@ export default function MyReviewsPage() {
     }
   }, [isLoggedIn]);
 
+  // ✅ FILTER INVALID REVIEWS (vehicle missing)
+  const validReviews = useMemo(() => {
+    return reviews.filter(
+      (r) => r.vehicle && r.vehicle.make && r.vehicle.model
+    );
+  }, [reviews]);
+
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto mt-20">
       <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
@@ -43,29 +51,29 @@ export default function MyReviewsPage() {
       {/* Loading skeleton */}
       {loading && (
         <div className="space-y-4 animate-pulse">
-          {[1, 2, 3].map(id => (
+          {[1, 2, 3].map((id) => (
             <div key={id} className="h-24 bg-gray-200 rounded-lg"></div>
           ))}
         </div>
       )}
 
       {/* No Reviews */}
-      {!loading && reviews.length === 0 && (
+      {!loading && validReviews.length === 0 && (
         <p className="text-center text-gray-500 text-lg">
           You have not written any reviews yet.
         </p>
       )}
 
       {/* Reviews List */}
-      {!loading && reviews.length > 0 && (
+      {!loading && validReviews.length > 0 && (
         <div className="space-y-4">
-          {reviews.map((r) => (
+          {validReviews.map((r) => (
             <div
               key={r._id}
               className="bg-white p-4 rounded-xl shadow border hover:shadow-lg transition"
             >
               <h3 className="text-xl font-semibold text-gray-800">
-                {r.vehicle?.model} {r.vehicle?.make}  ({r.vehicle?.year})
+                {r.vehicle.make} {r.vehicle.model} ({r.vehicle.year})
               </h3>
 
               <p className="mt-1 text-sm text-gray-600">
